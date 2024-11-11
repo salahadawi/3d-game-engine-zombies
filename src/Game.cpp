@@ -248,9 +248,13 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
 
         if (hit == 1)
         {
-            sf::Color color = (side == 1) ? sf::Color(128, 128, 128) : sf::Color::White;
+            // Dark brown for walls, slightly darker for shaded walls
+            sf::Color wallColor = (side == 1)
+                                      ? sf::Color(82, 43, 28)   // Darker brown for shaded walls
+                                      : sf::Color(116, 60, 39); // Brown for lit walls
+
             for (int y = drawStart; y < drawEnd; y++)
-                buffer.setPixel(x, y, color);
+                buffer.setPixel(x, y, wallColor);
         }
 
         else
@@ -263,7 +267,9 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
     {
         for (int x = 0; x < GridWidth; x++)
         {
-            sf::Color color = (MapArray1[x + y * GridWidth] == 1) ? sf::Color(128, 128, 128) : sf::Color::White;
+            sf::Color color = (MapArray1[x + y * GridWidth] == 1)
+                                  ? sf::Color(116, 60, 39) // Brown for walls
+                                  : sf::Color(51, 28, 17); // Darker brown for floor
             // Draw 10x10 block for each map point
             for (int blockY = 0; blockY < 10; blockY++)
             {

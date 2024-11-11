@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 
         // fill bottom half of screen with floor
         sf::RectangleShape floor(sf::Vector2f(ScreenWidth, ScreenHeight / 2));
-        floor.setFillColor(sf::Color(33, 33, 33));
+        floor.setFillColor(sf::Color(51, 28, 17)); // Darker brown for floor
         floor.setPosition(sf::Vector2f(0, ScreenHeight / 2));
         window.draw(floor);
 
