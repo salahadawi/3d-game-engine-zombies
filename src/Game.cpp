@@ -179,6 +179,35 @@ void Game::update(float deltaTime)
         {
             vampire->setSpeed(m_baseVampireSpeed);
         }
+
+        // Update slow effect
+        if (m_slowTimer > 0)
+        {
+            m_slowTimer -= deltaTime;
+            if (m_slowTimer <= 0)
+            {
+                m_vampireSpeedMultiplier = 1.0f; // Return to normal speed
+            }
+        }
+
+        // Update messages
+        for (auto it = m_messages.begin(); it != m_messages.end();)
+        {
+            it->duration -= deltaTime;
+            if (it->duration <= 0)
+            {
+                it = m_messages.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+
+        // Update vampire speeds
+        m_baseVampireSpeed = std::min(m_baseVampireSpeed + SPEED_INCREASE_RATE * deltaTime,
+                                      MAX_VAMPIRE_SPEED) *
+                             m_vampireSpeedMultiplier;
     }
 }
 
@@ -660,7 +689,7 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             target.draw(m_continueText);
         }
 
-        // Draw player health bar at bottom center
+        // Draw player health bar at bottom right
         const int healthBarWidth = 200;
         const int healthBarHeight = 20;
         const int healthBarX = (ScreenWidth - healthBarWidth) / 2;  // Center horizontally
@@ -762,8 +791,8 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         moneyLabel.setCharacterSize(20);
         moneyLabel.setFillColor(sf::Color::Yellow);
         moneyLabel.setPosition(
-            (ScreenWidth - healthBarWidth) / 2, // Same x-alignment as health bar
-            healthBarY - 40);                   // 40 pixels above health bar
+            healthBarX,       // Align with health bar
+            healthBarY - 40); // 40 pixels above health bar
         target.draw(moneyLabel);
 
         sf::Text moneyText;
@@ -778,6 +807,67 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             moneyLabel.getPosition().x + moneyLabel.getLocalBounds().width + 10, // 10 pixels after label
             healthBarY - 42);                                                    // Slightly adjusted to align with label
         target.draw(moneyText);
+
+        // Draw messages
+        float messageY = ScreenHeight / 3.0f;
+        for (const auto &msg : m_messages)
+        {
+            sf::Text messageText;
+            messageText.setFont(m_font);
+            messageText.setString(msg.text);
+            messageText.setCharacterSize(24);
+            messageText.setFillColor(sf::Color::Yellow);
+
+            // Center text
+            sf::FloatRect textBounds = messageText.getLocalBounds();
+            messageText.setPosition(
+                (ScreenWidth - textBounds.width) / 2,
+                messageY);
+
+            // Fade out near end of duration
+            if (msg.duration < 0.5f)
+            {
+                messageText.setFillColor(sf::Color(255, 255, 0,
+                                                   static_cast<sf::Uint8>(255 * (msg.duration / 0.5f))));
+            }
+
+            target.draw(messageText);
+            messageY += 30; // Space between messages
+        }
+
+        // Draw purchase information in bottom left
+        if (m_state == State::PLAYING)
+        {
+            const int TEXT_OFFSET_Y = 60; // Distance from bottom
+            const int LINE_HEIGHT = 25;   // Space between lines
+
+            std::vector<sf::Text> purchaseTexts;
+
+            // Create upgrade texts
+            sf::Text damageText;
+            damageText.setFont(m_font);
+            damageText.setCharacterSize(20);
+            damageText.setFillColor(sf::Color::Yellow);
+            damageText.setString("[Z] Upgrade Damage ($" +
+                                 std::to_string(m_pPlayer->getDamageUpgradeCost()) +
+                                 ")");
+
+            sf::Text slowText;
+            slowText.setFont(m_font);
+            slowText.setCharacterSize(20);
+            slowText.setFillColor(sf::Color::Yellow);
+            slowText.setString("[X] Slow Vampires ($" +
+                               std::to_string(m_pPlayer->getSlowUpgradeCost()) +
+                               ")");
+
+            // Position texts
+            damageText.setPosition(20, ScreenHeight - TEXT_OFFSET_Y);
+            slowText.setPosition(20, ScreenHeight - TEXT_OFFSET_Y + LINE_HEIGHT);
+
+            // Draw texts
+            target.draw(damageText);
+            target.draw(slowText);
+        }
     }
 }
 
@@ -962,8 +1052,8 @@ void Game::shootLaser()
 
             if (distToVamp < 0.5f) // Hit radius
             {
-                // Damage vampire
-                (*it)->damage(34.0f);
+                // Use player's current gun damage
+                (*it)->damage(m_pPlayer->getGunDamage());
 
                 // Remove vampire if dead and award money
                 if ((*it)->isDead())
@@ -999,4 +1089,15 @@ void Game::shootLaser()
         LASER_LIFETIME, // lifetime
         true            // active
     };
+}
+
+void Game::showMessage(const std::string &msg, float duration)
+{
+    m_messages.push_back({msg, duration});
+}
+
+void Game::slowVampires()
+{
+    m_vampireSpeedMultiplier = 0.5f; // Slow to 50% speed
+    m_slowTimer = SLOW_DURATION;
 }

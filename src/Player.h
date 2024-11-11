@@ -47,6 +47,15 @@ public:
     void addMoney(int amount) { m_money += amount; }
     int getMoney() const { return m_money; }
 
+    // Add upgrade methods
+    bool upgradeGunDamage();
+    bool slowVampires();
+
+    float getGunDamage() const { return m_gunDamage; }
+
+    int getDamageUpgradeCost() const { return 200 + (m_damageUpgradeCount * 100); }
+    int getSlowUpgradeCost() const { return 300 + (m_slowUpgradeCount * 150); }
+
 private:
     bool m_isGrounded;
     bool m_isDead = false;
@@ -77,4 +86,10 @@ private:
     const float m_regenRate = 20.0f; // Health points per second
 
     int m_money = 0; // Starting money
+
+    // Upgrade system with scaling prices
+    float m_gunDamage = 34.0f;
+    const float DAMAGE_UPGRADE_AMOUNT = 17.0f;
+    int m_damageUpgradeCount = 0;
+    int m_slowUpgradeCount = 0;
 };

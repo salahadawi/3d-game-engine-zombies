@@ -54,6 +54,37 @@ void GameInput::onKeyPressed(sf::Keyboard::Key key)
             pWindow->setMouseCursorGrabbed(false);
         }
     }
+    else if (key == sf::Keyboard::Z)
+    {
+        if (m_pPlayer->upgradeGunDamage())
+        {
+            m_pGame->showMessage("Gun Damage Upgraded! (+" +
+                                     std::to_string(static_cast<int>(m_pPlayer->getGunDamage())) + " damage)",
+                                 1.5f);
+        }
+        else
+        {
+            m_pGame->showMessage("Need $" +
+                                     std::to_string(m_pPlayer->getDamageUpgradeCost()) +
+                                     " for damage upgrade!",
+                                 1.5f);
+        }
+    }
+    else if (key == sf::Keyboard::X)
+    {
+        if (m_pPlayer->slowVampires())
+        {
+            m_pGame->slowVampires();
+            m_pGame->showMessage("Vampires Slowed!", 1.5f);
+        }
+        else
+        {
+            m_pGame->showMessage("Need $" +
+                                     std::to_string(m_pPlayer->getSlowUpgradeCost()) +
+                                     " to slow vampires!",
+                                 1.5f);
+        }
+    }
 }
 
 void GameInput::onKeyReleased(sf::Keyboard::Key key)

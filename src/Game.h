@@ -73,6 +73,9 @@ public:
 
     const std::vector<std::unique_ptr<Vampire>> &getVampires() const { return m_pVampires; }
 
+    void showMessage(const std::string &msg, float duration);
+    void slowVampires();
+
 private:
     std::unique_ptr<Player> m_pPlayer;
     std::unique_ptr<Door> m_pDoor;
@@ -133,6 +136,19 @@ private:
     float m_baseVampireSpeed = VampireSpeed;
     const float SPEED_INCREASE_RATE = 0.5f;              // Speed increase per second
     const float MAX_VAMPIRE_SPEED = VampireSpeed * 3.0f; // Maximum speed (3x initial speed)
+
+    // Message system
+    struct Message
+    {
+        std::string text;
+        float duration;
+    };
+    std::vector<Message> m_messages;
+
+    // Vampire speed control
+    float m_vampireSpeedMultiplier = 1.0f;
+    const float SLOW_DURATION = 10.0f; // Slow effect lasts 10 seconds
+    float m_slowTimer = 0.0f;
 
     void formatTime(float seconds, char *buffer) const;
 };

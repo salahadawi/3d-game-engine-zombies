@@ -134,3 +134,28 @@ void Player::update(float deltaTime)
         m_health = std::min(m_maxHealth, m_health + m_regenRate * deltaTime);
     }
 }
+
+bool Player::upgradeGunDamage()
+{
+    int cost = getDamageUpgradeCost();
+    if (m_money >= cost)
+    {
+        m_money -= cost;
+        m_gunDamage += DAMAGE_UPGRADE_AMOUNT;
+        m_damageUpgradeCount++;
+        return true;
+    }
+    return false;
+}
+
+bool Player::slowVampires()
+{
+    int cost = getSlowUpgradeCost();
+    if (m_money >= cost)
+    {
+        m_money -= cost;
+        m_slowUpgradeCount++;
+        return true;
+    }
+    return false;
+}
