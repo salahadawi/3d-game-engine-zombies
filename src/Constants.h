@@ -4,6 +4,10 @@ const int ScreenWidth = 800;
 const int ScreenHeight = 600;
 const float VerticalFOVDiv = 2.0;
 
+// Camera control constants
+const float MouseTurnSpeed = 0.002f;  // Mouse sensitivity
+const float KeyboardTurnSpeed = 2.0f; // Keyboard turn rate (radians per second)
+
 const float Gravity = 180.0f;
 const float JumpYVelocity = -230.0f;
 
@@ -61,7 +65,3 @@ const int MapArray1[GridHeight * GridWidth]{
 	1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1,
 	1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-
-// Camera control constants
-const float MouseTurnSpeed = 0.001f;  // Mouse sensitivity
-const float KeyboardTurnSpeed = 2.0f; // Keyboard turn rate (radians per second)

@@ -41,6 +41,7 @@ bool Game::initialise(sf::RenderWindow &window)
         std::cerr << "Unable to load texture" << std::endl;
         return false;
     }
+    // Ray gun image from Call of Duty Black Ops 2
     if (!m_rayGunTexture.loadFromFile(ResourceManager::getFilePath("raygun.png")))
     {
         std::cerr << "Unable to load texture" << std::endl;
@@ -797,10 +798,11 @@ void Game::vampireSpawner(float deltaTime)
     m_pVampires.push_back(std::move(vampire));
 
     m_spawnCount++;
-    if (m_spawnCount % 5 == 0)
-    {
-        m_nextVampireCooldown -= 0.1f;
-    }
+
+    // Decrease spawn cooldown based on survival time
+    float timeReduction = m_survivalTime / 10.0f;
+    m_nextVampireCooldown = std::max(0.5f, 2.0f - timeReduction);
+
     m_vampireCooldown = m_nextVampireCooldown;
 }
 
