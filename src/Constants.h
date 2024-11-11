@@ -26,9 +26,17 @@ const int MaxVampires = 20;
 
 const float CoinRadius = 17.0f;
 
-// const int GridSize = 16;
-// const int GridHeight = 19;
-// const int GridWidth = 13;
+const float LASER_LIFETIME = 0.1; // Laser visible for 0.1 seconds
+
+const float TimerAnimationDuration = 2.0f;
+const float InitialTimerScale = 4.0f; // Initial size multiplier
+
+const float HealthIncreaseRate = 10.0f; // HP increase per second
+const float MaxVampireHealth = 500.0f;	// Maximum vampire health
+
+const float SpeedIncreaseRate = 0.5f; // Speed increase per second
+const float MaxVampireSpeed = VampireSpeed * 3.0f;
+
 const int GridHeight = 16;
 const int GridWidth = 32;
 

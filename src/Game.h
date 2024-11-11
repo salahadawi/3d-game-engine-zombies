@@ -7,6 +7,9 @@
 #include <memory>
 #include "Constants.h"
 
+#include "LaserShot.h"
+#include "Minimap.h"
+
 class Player;
 class Game;
 class GameInput;
@@ -15,6 +18,8 @@ class Coin;
 class Door;
 class Vampire;
 
+struct LaserShot;
+class Minimap;
 namespace sf
 {
     class Clock;
@@ -71,10 +76,14 @@ public:
 
     void shootLaser();
 
+    const LaserShot &getLaserShot() const { return m_laserShot; }
+
     const std::vector<std::unique_ptr<Vampire>> &getVampires() const { return m_pVampires; }
 
     void showMessage(const std::string &msg, float duration);
     void slowVampires();
+
+    void drawMinimap(sf::RenderTarget &target, sf::Image &buffer) const;
 
 private:
     std::unique_ptr<Player> m_pPlayer;
@@ -104,15 +113,6 @@ private:
 
     sf::Texture m_vampTexture;
     sf::Texture m_rayGunTexture;
-
-    struct LaserShot
-    {
-        float startX, startY; // Starting position
-        float dirX, dirY;     // Direction
-        float distance;       // Distance to hit
-        float lifetime;       // How long to show the laser
-        bool active;          // Whether there's currently an active laser
-    };
 
     LaserShot m_laserShot;            // Single laser shot instead of vector
     const float LASER_LIFETIME = 0.1; // Laser visible for 0.1 seconds
@@ -150,5 +150,5 @@ private:
     const float SLOW_DURATION = 10.0f; // Slow effect lasts 10 seconds
     float m_slowTimer = 0.0f;
 
-    void formatTime(float seconds, char *buffer) const;
+    Minimap m_minimap;
 };
