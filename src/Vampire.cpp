@@ -21,7 +21,7 @@ void Vampire::update(float deltaTime)
     float nextX = m_position.x + direction.x * moveAmount;
     if (nextX > 0 && nextX < GridWidth)
     {
-        if (MapArray1[int(m_position.y) * GridWidth + int(nextX)] < 1)
+        if (MapArray1[int(m_position.y) * GridWidth + int(nextX)] != 1)
         {
             nextPosition.x = nextX;
         }
@@ -31,7 +31,7 @@ void Vampire::update(float deltaTime)
     float nextY = m_position.y + direction.y * moveAmount;
     if (nextY > 0 && nextY < GridHeight)
     {
-        if (MapArray1[int(nextY) * GridWidth + int(m_position.x)] < 1)
+        if (MapArray1[int(nextY) * GridWidth + int(m_position.x)] != 1)
         {
             nextPosition.y = nextY;
         }

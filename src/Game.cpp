@@ -259,10 +259,20 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
 
         if (hit == HitType::WALL)
         {
-            // Dark brown for walls, slightly darker for shaded walls
-            sf::Color wallColor = (side == 1)
-                                      ? sf::Color(82, 43, 28)   // Darker brown for shaded walls
-                                      : sf::Color(116, 60, 39); // Brown for lit walls
+            // Choose color based on map tile type
+            sf::Color wallColor;
+            if (MapArray1[mapY * GridWidth + mapX] == 3) // Spawner
+            {
+                wallColor = (side == 1)
+                                ? sf::Color(64, 0, 64)    // Darker purple for shaded spawners
+                                : sf::Color(128, 0, 128); // Purple for lit spawners
+            }
+            else // Normal wall
+            {
+                wallColor = (side == 1)
+                                ? sf::Color(82, 43, 28)   // Darker brown for shaded walls
+                                : sf::Color(116, 60, 39); // Brown for lit walls
+            }
 
             for (int y = drawStart; y < drawEnd; y++)
             {
@@ -683,7 +693,7 @@ void Game::vampireSpawner(float deltaTime)
         {
             if (MapArray1[y * GridWidth + x] == 3)
             {
-                spawnPoints.push_back(sf::Vector2f(x, y));
+                spawnPoints.push_back(sf::Vector2f(x + 0.5f, y + 0.5f));
             }
         }
     }
