@@ -13,6 +13,7 @@ class GameInput;
 class Rectangle;
 class Coin;
 class Door;
+class Vampire;
 
 namespace sf
 {
@@ -26,6 +27,13 @@ public:
     {
         PAUSED,
         PLAYING,
+    };
+
+    enum class HitType
+    {
+        NONE,
+        WALL,
+        VAMPIRE
     };
 
     Game();
@@ -54,12 +62,19 @@ public:
 
     sf::Text *getContinueText() { return &m_continueText; }
 
+    Player *getPlayer() { return m_pPlayer.get(); }
+
+    void vampireSpawner(float deltaTime);
+
+    sf::Texture *getVampTexture() { return &m_vampTexture; }
+
 private:
     std::unique_ptr<Player> m_pPlayer;
     std::unique_ptr<Door> m_pDoor;
 
     std::vector<std::unique_ptr<Rectangle>> m_pRectangles;
     std::vector<std::unique_ptr<Coin>> m_pCoins;
+    std::vector<std::unique_ptr<Vampire>> m_pVampires;
 
     State m_state;
     std::unique_ptr<sf::Clock> m_pClock;
@@ -74,4 +89,10 @@ private:
     sf::RenderWindow *m_pWindow;
 
     sf::Text m_continueText;
+
+    float m_vampireCooldown = 0.0f;
+    float m_nextVampireCooldown = 2.0f;
+    int m_spawnCount = 0;
+
+    sf::Texture m_vampTexture;
 };

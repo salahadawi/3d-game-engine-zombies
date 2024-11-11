@@ -10,6 +10,7 @@
 #include "Rectangle.h"
 #include "Coin.h"
 #include "Door.h"
+#include "Vampire.h"
 
 Game::Game() : m_state(State::PLAYING),
                m_pClock(std::make_unique<sf::Clock>()),
@@ -36,6 +37,11 @@ bool Game::initialise(sf::RenderWindow &window)
         std::cerr << "Unable to load font" << std::endl;
         return false;
     }
+    if (!m_vampTexture.loadFromFile(ResourceManager::getFilePath("vampire.png")))
+    {
+        std::cerr << "Unable to load texture" << std::endl;
+        return false;
+    }
 
     m_continueText.setFont(m_font);
     m_continueText.setString("Continue");
@@ -49,11 +55,11 @@ bool Game::initialise(sf::RenderWindow &window)
 
 void Game::resetLevel()
 {
-    m_pCoins.clear();
-    m_pRectangles.clear();
+    // m_pCoins.clear();
+    // m_pRectangles.clear();
 
     m_pPlayer->setIsDead(false);
-    m_pDoor->setTriggered(false);
+    // m_pDoor->setTriggered(false);
 
     // const sf::Vector2f tileSize(TileSizeX, TileSizeY);
 
@@ -105,6 +111,12 @@ void Game::update(float deltaTime)
         m_pGameInput->update(deltaTime);
         m_pPlayer->updatePhysics(deltaTime);
         m_pPlayer->update(deltaTime);
+
+        vampireSpawner(deltaTime);
+        for (auto &temp : m_pVampires)
+        {
+            temp->update(deltaTime);
+        }
     }
 
     if (m_pPlayer->isDead())
@@ -135,22 +147,6 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         coinText.setPosition(sf::Vector2f(ScreenWidth - coinText.getLocalBounds().getSize().x, 0));
         target.draw(coinText);
     }
-
-    // Draw player.
-    // m_pPlayer->draw(target, states);
-
-    //  Draw world.
-    // for (auto &temp : m_pCoins)
-    // {
-    //     temp->draw(target, states);
-    // }
-    // for (auto &temp : m_pRectangles)
-    // {
-    //     temp->draw(target, states);
-    // }
-
-    // for (int y = 0; y < GridHeight; y++)
-    // {
 
     sf::Image buffer;
     buffer.create(ScreenWidth, ScreenHeight, sf::Color(0, 0, 0, 0));
@@ -193,9 +189,9 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             sideDistY = (mapY + 1.0 - m_pPlayer->getPosition().y) * deltaDistY;
         }
 
-        int hit = 0;
+        HitType hit = HitType::NONE;
         int side = 0;
-        while (hit == 0)
+        while (hit == HitType::NONE)
         {
             if (sideDistX < sideDistY)
             {
@@ -212,7 +208,7 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             if (mapY >= GridHeight || mapX >= GridWidth || mapY < 0 || mapX < 0)
                 break;
             if (MapArray1[mapX + mapY * GridWidth] > 0)
-                hit = 1;
+                hit = HitType::WALL;
         }
 
         float perpWallDist;
@@ -246,7 +242,7 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             wallSide = (rayDirY < 0) ? 0 : 1;
         }
 
-        if (hit == 1)
+        if (hit == HitType::WALL)
         {
             // Dark brown for walls, slightly darker for shaded walls
             sf::Color wallColor = (side == 1)
@@ -254,11 +250,162 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
                                       : sf::Color(116, 60, 39); // Brown for lit walls
 
             for (int y = drawStart; y < drawEnd; y++)
-                buffer.setPixel(x, y, wallColor);
+            {
+                float intensity = (LightingStrength / perpWallDist);
+                if (intensity < 1)
+                    buffer.setPixel(x, y, sf::Color(wallColor.r * intensity, wallColor.g * intensity, wallColor.b * intensity));
+                else
+                    buffer.setPixel(x, y, wallColor);
+            }
         }
+    }
+    // Draw vampires as sprites
+    sf::Image vampImage = m_vampTexture.copyToImage();
 
+    // Create a vector of vampires sorted by distance
+    std::vector<std::pair<float, Vampire *>> sortedVampires;
+    for (auto &vampire : m_pVampires)
+    {
+        float spriteX = vampire->getPosition().x - m_pPlayer->getPosition().x;
+        float spriteY = vampire->getPosition().y - m_pPlayer->getPosition().y;
+        float distToVampire = spriteX * spriteX + spriteY * spriteY; // Square distance is fine for sorting
+        sortedVampires.push_back({distToVampire, vampire.get()});
+    }
+
+    // Sort vampires from farthest to nearest
+    std::sort(sortedVampires.begin(), sortedVampires.end(),
+              [](auto &a, auto &b)
+              { return a.first > b.first; });
+
+    // Draw vampires in sorted order
+    for (auto &[dist, vampire] : sortedVampires)
+    {
+        // Get vampire position relative to player
+        float spriteX = vampire->getPosition().x - m_pPlayer->getPosition().x;
+        float spriteY = vampire->getPosition().y - m_pPlayer->getPosition().y;
+
+        // Transform sprite with the inverse camera matrix
+        float invDet = 1.0f / (m_pPlayer->getPlaneX() * m_pPlayer->getDirY() - m_pPlayer->getDirX() * m_pPlayer->getPlaneY());
+        float transformX = invDet * (m_pPlayer->getDirY() * spriteX - m_pPlayer->getDirX() * spriteY);
+        float transformY = invDet * (-m_pPlayer->getPlaneY() * spriteX + m_pPlayer->getPlaneX() * spriteY);
+
+        // Don't render if behind camera
+        if (transformY <= 0)
+            continue;
+
+        // Check if vampire is behind a wall using ray casting
+        float distToVampire = sqrt(spriteX * spriteX + spriteY * spriteY);
+        float rayDirX = spriteX / distToVampire;
+        float rayDirY = spriteY / distToVampire;
+
+        float deltaDistX = std::abs(1.0f / rayDirX);
+        float deltaDistY = std::abs(1.0f / rayDirY);
+
+        int mapX = int(m_pPlayer->getPosition().x);
+        int mapY = int(m_pPlayer->getPosition().y);
+
+        float sideDistX, sideDistY;
+        int stepX, stepY;
+
+        if (rayDirX < 0)
+        {
+            stepX = -1;
+            sideDistX = (m_pPlayer->getPosition().x - mapX) * deltaDistX;
+        }
         else
         {
+            stepX = 1;
+            sideDistX = (mapX + 1.0 - m_pPlayer->getPosition().x) * deltaDistX;
+        }
+        if (rayDirY < 0)
+        {
+            stepY = -1;
+            sideDistY = (m_pPlayer->getPosition().y - mapY) * deltaDistY;
+        }
+        else
+        {
+            stepY = 1;
+            sideDistY = (mapY + 1.0 - m_pPlayer->getPosition().y) * deltaDistY;
+        }
+
+        // Ray casting loop to check for walls
+        bool hitWall = false;
+        float distToWall = 0.0f;
+        while (!hitWall && distToWall < distToVampire)
+        {
+            if (sideDistX < sideDistY)
+            {
+                sideDistX += deltaDistX;
+                mapX += stepX;
+                distToWall = (mapX - m_pPlayer->getPosition().x + (1 - stepX) / 2) / rayDirX;
+            }
+            else
+            {
+                sideDistY += deltaDistY;
+                mapY += stepY;
+                distToWall = (mapY - m_pPlayer->getPosition().y + (1 - stepY) / 2) / rayDirY;
+            }
+
+            // Check if we hit a wall
+            if (mapX >= 0 && mapX < GridWidth && mapY >= 0 && mapY < GridHeight)
+            {
+                if (MapArray1[mapY * GridWidth + mapX] > 0)
+                {
+                    hitWall = true;
+                }
+            }
+        }
+
+        // Skip rendering this vampire if it's behind a wall
+        if (hitWall && distToWall < distToVampire)
+        {
+            continue;
+        }
+
+        int spriteScreenX = int((ScreenWidth / 2) * (1 + transformX / transformY));
+
+        // Calculate sprite dimensions on screen
+        int spriteHeight = abs(int(ScreenHeight / transformY));
+        int drawStartY = -spriteHeight / 2 + ScreenHeight / 2;
+        if (drawStartY < 0)
+            drawStartY = 0;
+        int drawEndY = spriteHeight / 2 + ScreenHeight / 2;
+        if (drawEndY >= ScreenHeight)
+            drawEndY = ScreenHeight - 1;
+
+        int spriteWidth = abs(int(ScreenHeight / transformY));
+        int drawStartX = -spriteWidth / 2 + spriteScreenX;
+        if (drawStartX < 0)
+            drawStartX = 0;
+        int drawEndX = spriteWidth / 2 + spriteScreenX;
+        if (drawEndX >= ScreenWidth)
+            drawEndX = ScreenWidth - 1;
+
+        // Draw the sprite
+        for (int stripe = drawStartX; stripe < drawEndX; stripe++)
+        {
+            if (transformY > 0) // Check if in front of camera
+            {
+                int texX = int(256 * (stripe - (-spriteWidth / 2 + spriteScreenX)) * vampImage.getSize().x / spriteWidth) / 256;
+
+                for (int y = drawStartY; y < drawEndY; y++)
+                {
+                    int d = (y) * 256 - ScreenHeight * 128 + spriteHeight * 128;
+                    int texY = ((d * vampImage.getSize().y) / spriteHeight) / 256;
+
+                    sf::Color pixelColor = vampImage.getPixel(texX, texY);
+                    if (pixelColor.a > 0) // Only draw non-transparent pixels
+                    {
+                        // Apply distance-based lighting
+                        float lightIntensity = std::min(LightingStrength / transformY, 1.0f);
+                        pixelColor.r = uint8_t(pixelColor.r * lightIntensity);
+                        pixelColor.g = uint8_t(pixelColor.g * lightIntensity);
+                        pixelColor.b = uint8_t(pixelColor.b * lightIntensity);
+
+                        buffer.setPixel(stripe, y, pixelColor);
+                    }
+                }
+            }
         }
     }
 
@@ -346,4 +493,37 @@ std::vector<Rectangle *> Game::getRectangles() const
 Door *Game::getDoor()
 {
     return m_pDoor.get();
+}
+
+void Game::vampireSpawner(float deltaTime)
+{
+    if (m_vampireCooldown > 0.0f)
+    {
+        m_vampireCooldown -= deltaTime;
+        return;
+    }
+
+    // float randomXPos = rand() % ScreenWidth;
+    // float randomYPos = rand() % ScreenHeight;
+
+    // float distToRight = (float)ScreenWidth - randomXPos;
+    // float distToBottom = (float)ScreenHeight - randomYPos;
+
+    // float xMinDist = randomXPos < distToRight ? -randomXPos : distToRight;
+    // float yMinDist = randomYPos < distToBottom ? -randomYPos : distToBottom;
+
+    // if (abs(xMinDist) < abs(yMinDist))
+    //     randomXPos += xMinDist;
+    // else
+    //     randomYPos += yMinDist;
+
+    sf::Vector2f spawnPosition = sf::Vector2f(2, 0);
+    m_pVampires.push_back(std::make_unique<Vampire>(this, spawnPosition));
+
+    m_spawnCount++;
+    if (m_spawnCount % 5 == 0)
+    {
+        m_nextVampireCooldown -= 0.1f;
+    }
+    m_vampireCooldown = m_nextVampireCooldown;
 }

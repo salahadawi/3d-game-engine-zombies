@@ -2,7 +2,7 @@
 #include "Coin.h"
 #include <SFML/Graphics.hpp>
 #include "Rectangle.h"
-#include "MathUtils.h"
+// #include "MathUtils.h"
 #include "Constants.h"
 
 Coin::Coin(float radius, sf::Vector2f position) : m_radius(radius)
@@ -23,10 +23,11 @@ bool Coin::collidesWith(Rectangle *other)
     sf::Vector2f botLeft = position + sf::Vector2f(0, size.y);
     sf::Vector2f botRight = position + size;
 
-    return VecLength(topRight - getCenter()) < m_radius ||
-           VecLength(topLeft - getCenter()) < m_radius ||
-           VecLength(botRight - getCenter()) < m_radius ||
-           VecLength(botLeft - getCenter()) < m_radius;
+    // return VecLength(topRight - getCenter()) < m_radius ||
+    //        VecLength(topLeft - getCenter()) < m_radius ||
+    //        VecLength(botRight - getCenter()) < m_radius ||
+    //        VecLength(botLeft - getCenter()) < m_radius;
+    return false;
 }
 
 void Coin::draw(sf::RenderTarget &target, sf::RenderStates states) const

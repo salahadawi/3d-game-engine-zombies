@@ -26,8 +26,8 @@ void Player::move(InputData inputData, float deltaTime)
     m_planeX = cos(m_rotation + M_PI / 2);
     m_dirY = sin(m_rotation);
     m_planeY = sin(m_rotation + M_PI / 2);
-    printf("Rotation: %f\n", m_rotation);
-    printf("Direction: %f, %f\n", m_dirX, m_dirY);
+    // printf("Rotation: %f\n", m_rotation);
+    // printf("Direction: %f, %f\n", m_dirX, m_dirY);
 
     // Forward movement
     if (inputData.m_movingUp)
@@ -94,7 +94,7 @@ void Player::move(InputData inputData, float deltaTime)
             }
         }
     }
-    printf("Position: %f, %f\n", m_position.x, m_position.y);
+    // printf("Position: %f, %f\n", m_position.x, m_position.y);
 }
 
 void Player::updatePhysics(float deltaTime)

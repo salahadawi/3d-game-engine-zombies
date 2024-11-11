@@ -7,6 +7,8 @@ const float VerticalFOVDiv = 2.0;
 const float Gravity = 180.0f;
 const float JumpYVelocity = -230.0f;
 
+const float LightingStrength = 2.0f;
+
 const float PlayerHeight = 60.0f;
 const float PlayerWidth = 40.0f;
 const float PlayerSpeed = 155.0f;
@@ -15,6 +17,10 @@ const float TurnSpeed = 0.05; // use this later for calculating player turn spee
 const float PlayerJumpTime = 0.7f;
 const float PlayerRotationSpeed = 0.05;
 const float PlayerSpawnPoint = -1;
+
+const float VampireHeight = 32.0f;
+const float VampireWidth = 32.0f;
+const float VampireSpeed = 1.0f;
 
 const float CoinRadius = 17.0f;
 
@@ -37,7 +43,7 @@ enum eTile
 const int LevelCount = 2;
 // Level 1 definition
 const int MapArray1[GridHeight * GridWidth]{
-	1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
+	1, 2, 2, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
 	1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 	1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 	1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
