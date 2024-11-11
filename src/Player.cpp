@@ -15,7 +15,17 @@ Player::Player(Game *pGame) : m_pGame(pGame)
 void Player::move(InputData inputData, float deltaTime)
 {
     // Handle mouse movement for rotation
-    m_rotation += inputData.m_mouseDelta.x * 0.001;
+    m_rotation += inputData.m_mouseDelta.x * MouseTurnSpeed;
+
+    // Handle keyboard turning
+    if (inputData.m_turningLeft)
+    {
+        m_rotation -= KeyboardTurnSpeed * deltaTime;
+    }
+    if (inputData.m_turningRight)
+    {
+        m_rotation += KeyboardTurnSpeed * deltaTime;
+    }
 
     // Keep rotation between 0 and 2π
     m_rotation += 2 * M_PI;

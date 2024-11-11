@@ -15,11 +15,14 @@ struct InputData
     bool m_movingDown = false;
     bool m_movingLeft = false;
     bool m_movingRight = false;
+    bool m_turningLeft = false;
+    bool m_turningRight = false;
+    bool m_shooting = false;
 
     sf::Vector2f m_mouseDelta{0.0f, 0.0f};
     bool m_mouseLeftPressed = false;
 
-    bool hasInputs() { return m_movingUp || m_movingDown || m_movingLeft || m_movingRight; }
+    bool hasInputs() { return m_movingUp || m_movingDown || m_movingLeft || m_movingRight || m_turningLeft || m_turningRight; }
 };
 
 class GameInput

@@ -85,6 +85,21 @@ void GameInput::onKeyPressed(sf::Keyboard::Key key)
                                  1.5f);
         }
     }
+    else if (key == sf::Keyboard::Left)
+    {
+        m_inputData.m_turningLeft = true;
+    }
+    else if (key == sf::Keyboard::Right)
+    {
+        m_inputData.m_turningRight = true;
+    }
+    else if (key == sf::Keyboard::Space)
+    {
+        if (m_pGame->getState() == Game::State::PLAYING)
+        {
+            m_pGame->shootLaser();
+        }
+    }
 }
 
 void GameInput::onKeyReleased(sf::Keyboard::Key key)
@@ -104,6 +119,14 @@ void GameInput::onKeyReleased(sf::Keyboard::Key key)
     else if (key == sf::Keyboard::D)
     {
         m_inputData.m_movingRight = false;
+    }
+    else if (key == sf::Keyboard::Left)
+    {
+        m_inputData.m_turningLeft = false;
+    }
+    else if (key == sf::Keyboard::Right)
+    {
+        m_inputData.m_turningRight = false;
     }
 }
 
