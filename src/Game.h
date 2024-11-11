@@ -124,5 +124,9 @@ private:
     const float TIMER_ANIMATION_DURATION = 2.0f;
     const float INITIAL_TIMER_SCALE = 4.0f; // Initial size multiplier
 
+    float m_baseVampireHealth = 100.0f;
+    const float HEALTH_INCREASE_RATE = 10.0f; // HP increase per second
+    const float MAX_VAMPIRE_HEALTH = 500.0f;  // Maximum vampire health
+
     void formatTime(float seconds, char *buffer) const;
 };

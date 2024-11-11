@@ -13,6 +13,12 @@ public:
     float getHealth() const { return m_health; }
     void damage(float amount) { m_health = std::max(0.0f, m_health - amount); }
     bool isDead() const { return m_health <= 0; }
+    void setMaxHealth(float health)
+    {
+        m_maxHealth = health;
+        m_health = health;
+    }
+    float getMaxHealth() const { return m_maxHealth; }
 
 private:
     Game *m_pGame;
@@ -20,4 +26,5 @@ private:
     float m_health = 100.0f;
     float m_attackCooldown = 0.0f;
     const float ATTACK_DELAY = 1.0f; // 1 second between attacks
+    float m_maxHealth = 100.0f;
 };

@@ -165,6 +165,10 @@ void Game::update(float deltaTime)
         {
             m_timerAnimationTime = std::max(0.0f, m_timerAnimationTime - deltaTime);
         }
+
+        // Increase base vampire health over time
+        m_baseVampireHealth = std::min(m_baseVampireHealth + HEALTH_INCREASE_RATE * deltaTime,
+                                       MAX_VAMPIRE_HEALTH);
     }
 }
 
@@ -454,18 +458,21 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             }
 
             // Draw health bar above vampire
-            int healthBarWidth = spriteWidth / 2;              // Half the width of the sprite
-            int healthBarHeight = 4;                           // Fixed height for health bar
-            int healthBarY = drawStartY - healthBarHeight - 2; // Position above vampire
+            const int FIXED_HEALTH_BAR_WIDTH = 40; // Fixed width in pixels
+            const int FIXED_HEALTH_BAR_HEIGHT = 4; // Fixed height in pixels
+
+            // Position the health bar above the vampire sprite
+            int healthBarY = drawStartY - FIXED_HEALTH_BAR_HEIGHT - 2;
 
             if (healthBarY >= 0) // Only draw if health bar is on screen
             {
-                int healthBarX = spriteScreenX - healthBarWidth / 2;
+                // Center the health bar above the vampire
+                int healthBarX = spriteScreenX - FIXED_HEALTH_BAR_WIDTH / 2;
 
                 // Draw background (red)
-                for (int x = 0; x < healthBarWidth; x++)
+                for (int x = 0; x < FIXED_HEALTH_BAR_WIDTH; x++)
                 {
-                    for (int y = 0; y < healthBarHeight; y++)
+                    for (int y = 0; y < FIXED_HEALTH_BAR_HEIGHT; y++)
                     {
                         if (healthBarX + x >= 0 && healthBarX + x < ScreenWidth)
                         {
@@ -475,10 +482,10 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
                 }
 
                 // Draw health (green)
-                int healthWidth = int(healthBarWidth * (vampire->getHealth() / 100.0f));
+                int healthWidth = int(FIXED_HEALTH_BAR_WIDTH * (vampire->getHealth() / vampire->getMaxHealth()));
                 for (int x = 0; x < healthWidth; x++)
                 {
-                    for (int y = 0; y < healthBarHeight; y++)
+                    for (int y = 0; y < FIXED_HEALTH_BAR_HEIGHT; y++)
                     {
                         if (healthBarX + x >= 0 && healthBarX + x < ScreenWidth)
                         {
@@ -818,7 +825,10 @@ void Game::vampireSpawner(float deltaTime)
     int randomIndex = rand() % spawnPoints.size();
     sf::Vector2f spawnPosition = spawnPoints[randomIndex];
 
-    m_pVampires.push_back(std::make_unique<Vampire>(this, spawnPosition));
+    // Create vampire with current base health
+    auto vampire = std::make_unique<Vampire>(this, spawnPosition);
+    vampire->setMaxHealth(m_baseVampireHealth); // Set the new vampire's health
+    m_pVampires.push_back(std::move(vampire));
 
     m_spawnCount++;
     if (m_spawnCount % 5 == 0)
