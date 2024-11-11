@@ -22,9 +22,9 @@ void Vampire::update(float deltaTime)
     // Store current position in case we need to revert
     sf::Vector2f oldPosition = m_position;
 
-    // Calculate next position
+    // Calculate next position using current speed
     sf::Vector2f nextPosition = m_position;
-    float moveAmount = VampireSpeed * deltaTime;
+    float moveAmount = m_speed * deltaTime;
 
     // Try to move in X direction
     float nextX = m_position.x + direction.x * moveAmount;

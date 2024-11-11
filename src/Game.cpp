@@ -169,6 +169,16 @@ void Game::update(float deltaTime)
         // Increase base vampire health over time
         m_baseVampireHealth = std::min(m_baseVampireHealth + HEALTH_INCREASE_RATE * deltaTime,
                                        MAX_VAMPIRE_HEALTH);
+
+        // Increase base vampire speed over time
+        m_baseVampireSpeed = std::min(m_baseVampireSpeed + SPEED_INCREASE_RATE * deltaTime,
+                                      MAX_VAMPIRE_SPEED);
+
+        // Update existing vampires' speed
+        for (auto &vampire : m_pVampires)
+        {
+            vampire->setSpeed(m_baseVampireSpeed);
+        }
     }
 }
 
@@ -832,7 +842,7 @@ void Game::vampireSpawner(float deltaTime)
     {
         m_vampireCooldown -= deltaTime;
         return;
-        }
+    }
 
     // Find all spawn points in the map
     std::vector<sf::Vector2f> spawnPoints;
@@ -851,9 +861,10 @@ void Game::vampireSpawner(float deltaTime)
     int randomIndex = rand() % spawnPoints.size();
     sf::Vector2f spawnPosition = spawnPoints[randomIndex];
 
-    // Create vampire with current base health
+    // Create vampire with current base health and speed
     auto vampire = std::make_unique<Vampire>(this, spawnPosition);
-    vampire->setMaxHealth(m_baseVampireHealth); // Set the new vampire's health
+    vampire->setMaxHealth(m_baseVampireHealth);
+    vampire->setSpeed(m_baseVampireSpeed);
     m_pVampires.push_back(std::move(vampire));
 
     m_spawnCount++;

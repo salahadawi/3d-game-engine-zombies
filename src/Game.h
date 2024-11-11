@@ -130,5 +130,9 @@ private:
     const float HEALTH_INCREASE_RATE = 10.0f; // HP increase per second
     const float MAX_VAMPIRE_HEALTH = 500.0f;  // Maximum vampire health
 
+    float m_baseVampireSpeed = VampireSpeed;
+    const float SPEED_INCREASE_RATE = 0.5f;              // Speed increase per second
+    const float MAX_VAMPIRE_SPEED = VampireSpeed * 3.0f; // Maximum speed (3x initial speed)
+
     void formatTime(float seconds, char *buffer) const;
 };

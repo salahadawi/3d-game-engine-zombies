@@ -2,6 +2,8 @@
 #include <SFML/System/Vector2.hpp>
 #include <algorithm>
 
+#include "Constants.h"
+
 class Game;
 
 class Vampire
@@ -19,6 +21,8 @@ public:
         m_health = health;
     }
     float getMaxHealth() const { return m_maxHealth; }
+    void setSpeed(float speed) { m_speed = speed; }
+    float getSpeed() const { return m_speed; }
 
 private:
     Game *m_pGame;
@@ -27,4 +31,5 @@ private:
     float m_attackCooldown = 0.0f;
     const float ATTACK_DELAY = 1.0f; // 1 second between attacks
     float m_maxHealth = 100.0f;
+    float m_speed = VampireSpeed; // Starting speed
 };
