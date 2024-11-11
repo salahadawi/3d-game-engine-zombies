@@ -2,12 +2,13 @@
 
 #include "Rectangle.h"
 #include "Constants.h"
+#include <cmath>
 
 struct InputData;
 
 class Game;
 
-class Player : public Rectangle
+class Player
 {
 public:
     Player(Game *pGame);
@@ -24,18 +25,19 @@ public:
     void setIsDead(bool isDead) { m_isDead = isDead; }
 
     // 0.5 to center the player on the tile
-    void setSpawnPoint(sf::Vector2f spawnPoint) { setPosition(sf::Vector2f(spawnPoint.x + 0.5f, spawnPoint.y + 0.5f)); }
+    void setSpawnPoint(sf::Vector2f spawnPoint) { m_position = sf::Vector2f(spawnPoint.x + 0.5f, spawnPoint.y + 0.5f); }
 
-    void updateSpeed(float deltaTime) { m_move_speed = deltaTime / 1000 / 150; }
-    void updateTurnSpeed(float deltaTime) { m_rotation_speed = deltaTime / 1000 / 150; }
+    void updateSpeed(float deltaTime) { m_moveSpeed = deltaTime * 100; }
+    void updateTurnSpeed(float deltaTime) { m_rotationSpeed = deltaTime / 1000 / 150; }
 
-    float getDirX() { return m_dir_x; }
-    float getDirY() { return m_dir_y; }
-    float getPlaneX() { return m_plane_x; }
-    float getPlaneY() { return m_plane_y; }
+    float getDirX() { return m_dirX; }
+    float getDirY() { return m_dirY; }
+    float getPlaneX() { return m_planeX; }
+    float getPlaneY() { return m_planeY; }
 
-    float getX() { return m_x; }
-    float getY() { return m_y; }
+    sf::Vector2f getPosition() { return m_position; }
+
+    void setPosition(sf::Vector2f position) { m_position = position; }
 
 private:
     bool m_isGrounded;
@@ -44,18 +46,18 @@ private:
     Game *m_pGame;
     int m_coins = 0;
 
-    float m_x;
-    float m_y;
-    float m_dir_x = 1;
-    float m_dir_y = 0.000001;
-    float m_plane_x = 0;
-    float m_plane_y = 0.66;
-    float m_spawn_x;
-    float m_spawn_y;
-    float m_move_speed;
-    float m_rotation_speed = PlayerRotationSpeed;
-    int m_cam_height;
+    sf::Vector2f m_position;
+    float m_dirX = 1;
+    float m_dirY = 0.000001;
+    float m_planeX = 0;
+    float m_planeY = 0.66;
+    float m_spawnX;
+    float m_spawnY;
+    float m_moveSpeed;
+    float m_rotationSpeed = PlayerRotationSpeed;
+    int m_camHeight;
     int m_crouching;
     int m_busy;
-    float m_vertical_fov = VerticalFOVDiv;
+    float m_verticalFOV = VerticalFOVDiv;
+    float m_rotation = 0.0f;
 };

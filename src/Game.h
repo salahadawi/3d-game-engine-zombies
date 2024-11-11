@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Window/Keyboard.hpp>
@@ -39,6 +40,7 @@ public:
 
     void onKeyPressed(sf::Keyboard::Key key);
     void onKeyReleased(sf::Keyboard::Key key);
+    void getInput(sf::RenderWindow &window);
 
     Door *getDoor();
     std::vector<Rectangle *> getRectangles() const;

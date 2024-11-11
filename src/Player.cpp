@@ -5,45 +5,96 @@
 #include <vector>
 #include "Game.h"
 #include "Door.h"
+#include <cmath>
 
-Player::Player(Game *pGame) : Rectangle(sf::Vector2f(PlayerWidth, PlayerHeight)), m_pGame(pGame)
+Player::Player(Game *pGame) : m_pGame(pGame)
 {
-    setPosition(sf::Vector2f(ScreenWidth * 0.5f, ScreenHeight * 0.5f)); // TODO: spawn position constant?
-    setOrigin(sf::Vector2f(0.0f, 0.0f));
-    setColor(sf::Color::Blue);
 }
 
 void Player::move(InputData inputData, float deltaTime)
 {
-    // float xSpeed = 0.0f;
+    // Handle mouse movement for rotation
+    m_rotation += inputData.m_mouseDelta.x * 0.001;
 
-    // xSpeed -= inputData.m_movingLeft * PlayerSpeed;
-    // xSpeed += inputData.m_movingRight * PlayerSpeed;
-    // xSpeed *= deltaTime;
+    // Keep rotation between 0 and 2π
+    m_rotation += 2 * M_PI;
+    while (m_rotation >= 2 * M_PI)
+        m_rotation -= 2 * M_PI;
 
-    // sf::Transformable::move(sf::Vector2f(xSpeed, 0.0f));
+    // Update direction vector based on rotation
+    m_dirX = cos(m_rotation);
+    m_planeX = cos(m_rotation + M_PI / 2);
+    m_dirY = sin(m_rotation);
+    m_planeY = sin(m_rotation + M_PI / 2);
+    printf("Rotation: %f\n", m_rotation);
+    printf("Direction: %f, %f\n", m_dirX, m_dirY);
 
-    // auto pRectangles = m_pGame->getRectangles();
-    // for (auto &pRectangle : pRectangles)
-    // {
-    //     // Move player back if collided with level geometry
-    //     if (pRectangle->collidesWith(this))
-    //     {
-    //         sf::Transformable::move(sf::Vector2f(-xSpeed, 0.0f));
-    //     }
-    // }
-
-    // setPosition(std::clamp(getPosition().x, 0.0f, (float)ScreenWidth), getPosition().y); // TODO: clean
-
+    // Forward movement
     if (inputData.m_movingUp)
     {
-        if (m_y + m_dir_y * MoveSpeed + (m_dir_y > 0 ? 0.3 : -0.3) < GridHeight && m_y + m_dir_y * MoveSpeed + (m_dir_y > 0 ? 0.3 : -0.3) > 0)
+        float nextY = m_position.y + m_dirY * m_moveSpeed / 20;
+        float nextX = m_position.x + m_dirX * m_moveSpeed / 20;
+
+        // Only check collision if we're still in bounds
+        if (nextY < GridHeight && nextY > 0 && nextX < GridWidth && nextX > 0)
         {
-            m_y += m_dir_y * MoveSpeed;
+            // Check if next position would hit a wall
+            if (MapArray1[int(nextY) * GridWidth + int(nextX)] < 1)
+            {
+                m_position.y = nextY;
+                m_position.x = nextX;
+            }
         }
-        m_y += 0.001;
     }
-    printf("y: %f\n", m_y);
+
+    // Backward movement
+    if (inputData.m_movingDown)
+    {
+        float nextY = m_position.y - m_dirY * m_moveSpeed / 20;
+        float nextX = m_position.x - m_dirX * m_moveSpeed / 20;
+
+        if (nextY < GridHeight && nextY > 0 && nextX < GridWidth && nextX > 0)
+        {
+            if (MapArray1[int(nextY) * GridWidth + int(nextX)] < 1)
+            {
+                m_position.y = nextY;
+                m_position.x = nextX;
+            }
+        }
+    }
+
+    // Strafe left
+    if (inputData.m_movingLeft)
+    {
+        float nextX = m_position.x - m_planeX * m_moveSpeed / 20;
+        float nextY = m_position.y - m_planeY * m_moveSpeed / 20;
+
+        if (nextX < GridWidth && nextX > 0 && nextY < GridHeight && nextY > 0)
+        {
+            if (MapArray1[int(nextY) * GridWidth + int(nextX)] < 1)
+            {
+                m_position.x = nextX;
+                m_position.y = nextY;
+            }
+        }
+    }
+
+    // Strafe right
+    if (inputData.m_movingRight)
+    {
+        float nextX = m_position.x + m_planeX * m_moveSpeed / 20;
+        float nextY = m_position.y + m_planeY * m_moveSpeed / 20;
+
+        if (nextX < GridWidth && nextX > 0 && nextY < GridHeight && nextY > 0)
+        {
+            if (MapArray1[int(nextY) * GridWidth + int(nextX)] < 1)
+            {
+                m_position.x = nextX;
+                m_position.y = nextY;
+            }
+        }
+    }
+    printf("Position: %f, %f\n", m_position.x, m_position.y);
 }
 
 void Player::updatePhysics(float deltaTime)
@@ -63,19 +114,19 @@ void Player::updatePhysics(float deltaTime)
     {
         ySpeed = Gravity;
     }
-    sf::Transformable::move(0.0f, ySpeed * deltaTime);
+    // sf::Transformable::move(0.0f, ySpeed * deltaTime);
 
     m_isGrounded = false;
-    auto pRectangles = m_pGame->getRectangles();
-    for (auto &pRectangle : pRectangles)
-    {
-        // Move player back if collided with level geometry
-        if (pRectangle->collidesWith(this))
-        {
-            sf::Transformable::move(sf::Vector2f(0.0f, -ySpeed * deltaTime));
-            m_isGrounded = true;
-        }
-    }
+    // auto pRectangles = m_pGame->getRectangles();
+    // for (auto &pRectangle : pRectangles)
+    // {
+    //     // Move player back if collided with level geometry
+    //     if (pRectangle->collidesWith(this))
+    //     {
+    //         sf::Transformable::move(sf::Vector2f(0.0f, -ySpeed * deltaTime));
+    //         m_isGrounded = true;
+    //     }
+    // }
 
     m_isDead = getPosition().y > ScreenHeight;
 }
@@ -85,17 +136,19 @@ void Player::update(float deltaTime)
     std::vector<Coin *> Coins = m_pGame->getCoins();
     int i = 0;
 
-    for (auto &temp : Coins)
-    {
-        if (temp->collidesWith(this))
-        {
-            temp->setCollected(true);
-            m_coins++;
-        }
-    }
+    // for (auto &temp : Coins)
+    // {
+    //     if (temp->collidesWith(this))
+    //     {
+    //         temp->setCollected(true);
+    //         m_coins++;
+    //     }
+    // }
 
-    if (m_pGame->getDoor()->collidesWith(this))
-    {
-        m_pGame->getDoor()->setTriggered(true);
-    }
+    // if (m_pGame->getDoor()->collidesWith(this))
+    // {
+    //     m_pGame->getDoor()->setTriggered(true);
+    // }
+
+    updateSpeed(deltaTime);
 }

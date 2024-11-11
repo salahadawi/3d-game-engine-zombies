@@ -93,45 +93,35 @@ void Game::resetLevel()
 
 void Game::update(float deltaTime)
 {
-    switch (m_state)
+    if (m_pClock->getElapsedTime().asSeconds() >= 3.f)
     {
-    case State::WAITING:
-    {
-        if (m_pClock->getElapsedTime().asSeconds() >= 3.f)
-        {
-            m_state = State::ACTIVE;
-        }
+        m_state = State::ACTIVE;
     }
-    break;
 
-    case State::ACTIVE:
+    m_pGameInput->update(deltaTime);
+    m_pPlayer->updatePhysics(deltaTime);
+    m_pPlayer->update(deltaTime);
+
+    if (m_pPlayer->isDead())
+        resetLevel();
+
+    if (m_pDoor->isTriggered())
     {
-        m_pGameInput->update(deltaTime);
-        m_pPlayer->updatePhysics(deltaTime);
-        m_pPlayer->update(deltaTime);
-
-        if (m_pPlayer->isDead())
+        m_clearedLevels++;
+        if (m_clearedLevels == LevelCount)
+        {
+            m_clearedLevels = 0;
+            m_score = 0;
+            m_state = State::WAITING;
+            m_pClock->restart();
             resetLevel();
-
-        if (m_pDoor->isTriggered())
+        }
+        else
         {
-            m_clearedLevels++;
-            if (m_clearedLevels == LevelCount)
-            {
-                m_clearedLevels = 0;
-                m_score = 0;
-                m_state = State::WAITING;
-                m_pClock->restart();
-                resetLevel();
-            }
-            else
-            {
-                resetLevel();
-            }
+            resetLevel();
         }
     }
-    break;
-    }
+
     int i = 0;
     while (i < m_pCoins.size())
     {
@@ -165,13 +155,13 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         coinText.setFillColor(sf::Color::White);
         coinText.setStyle(sf::Text::Bold);
         coinText.setString(std::to_string(m_pPlayer->getCoins()));
-        coinText.setColor(sf::Color::Yellow);
+        // coinText.setColor(sf::Color::Yellow);
         coinText.setPosition(sf::Vector2f(ScreenWidth - coinText.getLocalBounds().getSize().x, 0));
         target.draw(coinText);
     }
 
     // Draw player.
-    m_pPlayer->draw(target, states);
+    // m_pPlayer->draw(target, states);
 
     //  Draw world.
     // for (auto &temp : m_pCoins)
@@ -286,6 +276,7 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             for (int y = drawStart; y < drawEnd; y++)
                 buffer.setPixel(x, y, color);
         }
+
         else
         {
         }
@@ -322,6 +313,11 @@ void Game::onKeyPressed(sf::Keyboard::Key key)
 void Game::onKeyReleased(sf::Keyboard::Key key)
 {
     m_pGameInput->onKeyReleased(key);
+}
+
+void Game::getInput(sf::RenderWindow &window)
+{
+    m_pGameInput->getInput(window);
 }
 
 std::vector<Coin *> Game::getCoins()

@@ -9,6 +9,8 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(ScreenWidth, ScreenHeight), "Platformer");
     window.setKeyRepeatEnabled(false);
+    window.setMouseCursorVisible(false);
+    window.setMouseCursorGrabbed(true);
 
     std::unique_ptr<Game> pGame = std::make_unique<Game>();
     if (!pGame->initialise(window.getView().getSize()))
@@ -36,6 +38,9 @@ int main()
                 break;
             case sf::Event::KeyReleased:
                 pGame->onKeyReleased(event.key.code);
+                break;
+            case sf::Event::MouseMoved:
+                pGame->getInput(window);
                 break;
             default:
                 break;
