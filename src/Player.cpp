@@ -12,10 +12,8 @@ Player::Player(Game *pGame) : m_pGame(pGame)
 
 void Player::move(InputData inputData, float deltaTime)
 {
-    // Handle mouse movement for rotation
     m_rotation += inputData.m_mouseDelta.x * MouseTurnSpeed;
 
-    // Handle keyboard turning
     if (inputData.m_turningLeft)
     {
         m_rotation -= KeyboardTurnSpeed * deltaTime;
@@ -25,18 +23,15 @@ void Player::move(InputData inputData, float deltaTime)
         m_rotation += KeyboardTurnSpeed * deltaTime;
     }
 
-    // Keep rotation between 0 and 2π
     m_rotation += 2 * M_PI;
     while (m_rotation >= 2 * M_PI)
         m_rotation -= 2 * M_PI;
 
-    // Update direction vector based on rotation
     m_dirX = cos(m_rotation);
     m_planeX = cos(m_rotation + M_PI / 2);
     m_dirY = sin(m_rotation);
     m_planeY = sin(m_rotation + M_PI / 2);
 
-    // Store current position in case we need to revert
     sf::Vector2f oldPosition = m_position;
 
     // Forward movement
@@ -111,8 +106,7 @@ void Player::move(InputData inputData, float deltaTime)
         sf::Vector2f toVampire = vampire->getPosition() - m_position;
         float distanceToVampire = sqrt(toVampire.x * toVampire.x + toVampire.y * toVampire.y);
 
-        // If we're too close to a vampire, revert to old position
-        if (distanceToVampire < 0.5f) // Collision radius
+        if (distanceToVampire < 0.5f)
         {
             m_position = oldPosition;
             break;
@@ -134,7 +128,6 @@ void Player::update(float deltaTime)
 {
     updateSpeed(deltaTime);
 
-    // Update health regeneration
     m_timeSinceLastHit += deltaTime;
 
     if (m_timeSinceLastHit > m_regenDelay && m_health < m_maxHealth)

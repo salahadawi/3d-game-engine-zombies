@@ -14,10 +14,7 @@ GameInput::~GameInput()
 
 void GameInput::update(float deltaTime)
 {
-    // if (m_inputData.hasInputs())
-    // {
     m_pPlayer->move(m_inputData, deltaTime);
-    // }
 }
 
 void GameInput::onKeyPressed(sf::Keyboard::Key key)
@@ -132,13 +129,6 @@ void GameInput::onKeyReleased(sf::Keyboard::Key key)
 
 InputData GameInput::getInput(sf::RenderWindow &window)
 {
-
-    // Keyboard input
-    // inputData.m_movingLeft = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
-    // inputData.m_movingRight = sf::Keyboard::isKeyPressed(sf::Keyboard::D);
-    // inputData.m_movingUp = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
-    // inputData.m_movingDown = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
-
     // Mouse input
     sf::Vector2i currentMousePos = sf::Mouse::getPosition(window);
 
@@ -162,18 +152,6 @@ InputData GameInput::getInput(sf::RenderWindow &window)
         sf::Mouse::setPosition(windowCenter, window);
         m_lastMousePos = windowCenter;
     }
-    else if (m_pGame->getState() == Game::State::PAUSED)
-    {
-        //     if (m_inputData.m_mouseLeftPressed)
-        //     {
-        //         if (m_pGame->getContinueText()->getGlobalBounds().contains(sf::Vector2f(currentMousePos)))
-        //         {
-        //             m_pGame->togglePause();
-        //         }
-        //         printf("Mouse position: %d, %d\n", currentMousePos.x, currentMousePos.y);
-        //     }
-    }
-
     return m_inputData;
 }
 

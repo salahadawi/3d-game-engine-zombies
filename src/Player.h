@@ -22,7 +22,6 @@ public:
     bool isDead() const { return m_isDead; }
     void setIsDead(bool isDead) { m_isDead = isDead; }
 
-    // 0.5 to center the player on the tile
     void setSpawnPoint(sf::Vector2f spawnPoint) { m_position = sf::Vector2f(spawnPoint.x + 0.5f, spawnPoint.y + 0.5f); }
 
     void updateSpeed(float deltaTime) { m_moveSpeed = deltaTime * 100; }
@@ -74,14 +73,13 @@ private:
     float m_verticalFOV = VerticalFOVDiv;
     float m_rotation = 0.0f;
 
-    // Health system
     float m_health = 100.0f;
     const float m_maxHealth = 100.0f;
     float m_timeSinceLastHit = 0.0f;
-    const float m_regenDelay = 3.0f; // Start regenerating after 3 seconds
-    const float m_regenRate = 20.0f; // Health points per second
+    const float m_regenDelay = 3.0f;
+    const float m_regenRate = 20.0f;
 
-    int m_money = 0; // Starting money
+    int m_money = 0;
 
     // Upgrade system with scaling prices
     float m_gunDamage = 34.0f;

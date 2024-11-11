@@ -31,7 +31,6 @@ bool Game::initialise(sf::RenderWindow &window)
 {
     m_pWindow = &window;
     m_pClock->restart();
-    // std::string assetPath = Resources::getAssetPath();
     if (!m_font.loadFromFile(ResourceManager::getFilePath("Action_Man.ttf")))
     {
         std::cerr << "Unable to load font" << std::endl;
@@ -56,26 +55,21 @@ bool Game::initialise(sf::RenderWindow &window)
     // Initialize shapes from TileMap
     resetLevel();
 
-    // Setup start message
     m_startMessage.setFont(m_font);
     m_startMessage.setString("Vampires are invading the building, survive!");
     m_startMessage.setCharacterSize(30);
     m_startMessage.setFillColor(sf::Color::White);
 
-    // Center the message
     sf::FloatRect textBounds = m_startMessage.getLocalBounds();
     m_startMessage.setPosition(
         (ScreenWidth - textBounds.width) / 2,
         (ScreenHeight - textBounds.height) / 3);
-
-    // Setup game over texts
 
     m_gameOverText.setFont(m_font);
     m_gameOverText.setString("GAME OVER");
     m_gameOverText.setCharacterSize(50);
     m_gameOverText.setFillColor(sf::Color::Red);
 
-    // Center game over text
     sf::FloatRect gameOverBounds = m_gameOverText.getLocalBounds();
     m_gameOverText.setPosition(
         (ScreenWidth - gameOverBounds.width) / 2,
@@ -90,13 +84,11 @@ bool Game::initialise(sf::RenderWindow &window)
 
 void Game::resetLevel()
 {
-    // Don't reset if game is over
     if (m_state == State::GAME_OVER)
         return;
 
     m_pPlayer->setIsDead(false);
 
-    // set player spawn point
     for (int y = 0; y < GridHeight; y++)
     {
         for (int x = 0; x < GridWidth; x++)
@@ -113,10 +105,8 @@ void Game::update(float deltaTime)
 {
     if (m_state == State::PLAYING)
     {
-        // Update survival time
         m_survivalTime += deltaTime;
 
-        // Update start message timer
         if (m_showStartMessage)
         {
             m_messageTimer -= deltaTime;
@@ -136,7 +126,6 @@ void Game::update(float deltaTime)
             temp->update(deltaTime);
         }
 
-        // Update laser shot
         if (m_laserShot.active)
         {
             m_laserShot.lifetime -= deltaTime;
@@ -149,18 +138,14 @@ void Game::update(float deltaTime)
         if (m_pPlayer->isDead())
         {
             m_state = State::GAME_OVER;
-
-            // Format final score text
             m_finalScoreText.setString("You survived for " + std::to_string(static_cast<int>(m_survivalTime)) + " seconds.");
 
-            // Center final score text
             sf::FloatRect scoreBounds = m_finalScoreText.getLocalBounds();
             m_finalScoreText.setPosition(
                 (ScreenWidth - scoreBounds.width) / 2,
                 ScreenHeight / 2);
         }
 
-        // Update timer animation
         if (m_timerAnimationTime > 0.0f)
         {
             m_timerAnimationTime = std::max(0.0f, m_timerAnimationTime - deltaTime);
@@ -174,7 +159,6 @@ void Game::update(float deltaTime)
         m_baseVampireSpeed = std::min(m_baseVampireSpeed + SpeedIncreaseRate * deltaTime,
                                       MaxVampireSpeed);
 
-        // Update existing vampires' speed
         for (auto &vampire : m_pVampires)
         {
             vampire->setSpeed(m_baseVampireSpeed);
@@ -186,11 +170,10 @@ void Game::update(float deltaTime)
             m_slowTimer -= deltaTime;
             if (m_slowTimer <= 0)
             {
-                m_vampireSpeedMultiplier = 1.0f; // Return to normal speed
+                m_vampireSpeedMultiplier = 1.0f;
             }
         }
 
-        // Update messages
         for (auto it = m_messages.begin(); it != m_messages.end();)
         {
             it->duration -= deltaTime;
@@ -204,7 +187,6 @@ void Game::update(float deltaTime)
             }
         }
 
-        // Update vampire speeds
         m_baseVampireSpeed = std::min(m_baseVampireSpeed + SpeedIncreaseRate * deltaTime,
                                       MaxVampireSpeed) *
                              m_vampireSpeedMultiplier;
@@ -220,7 +202,6 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         overlay.setFillColor(sf::Color(0, 0, 0, 192));
         target.draw(overlay);
 
-        // Draw game over text
         target.draw(m_gameOverText);
         target.draw(m_finalScoreText);
     }
@@ -322,19 +303,18 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
 
             if (hit == HitType::WALL)
             {
-                // Choose color based on map tile type
                 sf::Color wallColor;
                 if (MapArray1[mapY * GridWidth + mapX] == 3) // Spawner
                 {
                     wallColor = (side == 1)
-                                    ? sf::Color(64, 0, 64)    // Darker purple for shaded spawners
-                                    : sf::Color(128, 0, 128); // Purple for lit spawners
+                                    ? sf::Color(64, 0, 64)
+                                    : sf::Color(128, 0, 128);
                 }
                 else // Normal wall
                 {
                     wallColor = (side == 1)
-                                    ? sf::Color(82, 43, 28)   // Darker brown for shaded walls
-                                    : sf::Color(116, 60, 39); // Brown for lit walls
+                                    ? sf::Color(82, 43, 28)
+                                    : sf::Color(116, 60, 39);
                 }
 
                 for (int y = drawStart; y < drawEnd; y++)
@@ -368,16 +348,13 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         // Draw vampires in sorted order
         for (auto &[dist, vampire] : sortedVampires)
         {
-            // Get vampire position relative to player
             float spriteX = vampire->getPosition().x - m_pPlayer->getPosition().x;
             float spriteY = vampire->getPosition().y - m_pPlayer->getPosition().y;
 
-            // Transform sprite with the inverse camera matrix
             float invDet = 1.0f / (m_pPlayer->getPlaneX() * m_pPlayer->getDirY() - m_pPlayer->getDirX() * m_pPlayer->getPlaneY());
             float transformX = invDet * (m_pPlayer->getDirY() * spriteX - m_pPlayer->getDirX() * spriteY);
             float transformY = invDet * (-m_pPlayer->getPlaneY() * spriteX + m_pPlayer->getPlaneX() * spriteY);
 
-            // Don't render if behind camera
             if (transformY <= 0)
                 continue;
 
@@ -472,7 +449,7 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             // Draw the sprite
             for (int stripe = drawStartX; stripe < drawEndX; stripe++)
             {
-                if (transformY > 0) // Check if in front of camera
+                if (transformY > 0)
                 {
                     int texX = int(256 * (stripe - (-spriteWidth / 2 + spriteScreenX)) * vampImage.getSize().x / spriteWidth) / 256;
 
@@ -496,21 +473,15 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
                 }
             }
 
-            // Draw health bar above vampire
-            const int FIXED_HEALTH_BAR_WIDTH = 40; // Fixed width in pixels
-            const int FIXED_HEALTH_BAR_HEIGHT = 4; // Fixed height in pixels
+            int healthBarY = drawStartY - FixedHealthBarHeight - 2;
 
-            int healthBarY = drawStartY - FIXED_HEALTH_BAR_HEIGHT - 2;
-
-            if (healthBarY >= 0) // Only draw if health bar is on screen
+            if (healthBarY >= 0)
             {
-                // Center the health bar above the vampire
-                int healthBarX = spriteScreenX - FIXED_HEALTH_BAR_WIDTH / 2;
+                int healthBarX = spriteScreenX - FixedHealthBarWidth / 2;
 
-                // Draw background (red)
-                for (int x = 0; x < FIXED_HEALTH_BAR_WIDTH; x++)
+                for (int x = 0; x < FixedHealthBarWidth; x++)
                 {
-                    for (int y = 0; y < FIXED_HEALTH_BAR_HEIGHT; y++)
+                    for (int y = 0; y < FixedHealthBarHeight; y++)
                     {
                         if (healthBarX + x >= 0 && healthBarX + x < ScreenWidth)
                         {
@@ -519,11 +490,10 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
                     }
                 }
 
-                // Draw health (green)
-                int healthWidth = int(FIXED_HEALTH_BAR_WIDTH * (vampire->getHealth() / vampire->getMaxHealth()));
+                int healthWidth = int(FixedHealthBarWidth * (vampire->getHealth() / vampire->getMaxHealth()));
                 for (int x = 0; x < healthWidth; x++)
                 {
-                    for (int y = 0; y < FIXED_HEALTH_BAR_HEIGHT; y++)
+                    for (int y = 0; y < FixedHealthBarHeight; y++)
                     {
                         if (healthBarX + x >= 0 && healthBarX + x < ScreenWidth)
                         {
@@ -546,31 +516,21 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         rayGunSprite.setPosition(ScreenWidth - 256 + xOffset, ScreenHeight - 256 + yOffset);
         target.draw(rayGunSprite);
 
-        // Draw laser shot if active
         if (m_laserShot.active)
         {
-            // Calculate laser progress (0 to 1) based on lifetime
             float progress = 1.0f - (m_laserShot.lifetime / LaserLifetime);
 
-            // Start position (ray gun)
             sf::Vector2f startPos(ScreenWidth - 240, ScreenHeight - 200);
-
-            // End position (screen center)
             sf::Vector2f endPos(ScreenWidth / 2 + 50, ScreenHeight / 2 + 30);
-
-            // Calculate current position of laser based on progress
             sf::Vector2f currentStart = startPos + (endPos - startPos) * progress;
 
-            // Laser length (shorter than full distance)
-            float laserLength = 50.0f; // Adjust this value to change laser length
+            float laserLength = 50.0f;
 
-            // Calculate laser end point
             sf::Vector2f direction = endPos - startPos;
             float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
-            direction /= length; // Normalize
+            direction /= length;
             sf::Vector2f currentEnd = currentStart + direction * laserLength;
 
-            // Draw thick laser using multiple lines
             const int laserThickness = 4;
             const float spacing = 2.0f;
 
@@ -578,7 +538,6 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             {
                 sf::VertexArray laserLine(sf::Lines, 2);
 
-                // Offset perpendicular to laser direction for thickness
                 float perpX = -direction.y * (i - laserThickness / 2.0f) * spacing;
                 float perpY = direction.x * (i - laserThickness / 2.0f) * spacing;
 
@@ -598,7 +557,6 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
                 target.draw(laserLine);
             }
 
-            // Draw laser in minimap (keep this thinner)
             sf::VertexArray minimapLaser(sf::Lines, 2);
             minimapLaser[0].position = sf::Vector2f(m_laserShot.startX * 10, m_laserShot.startY * 10);
             minimapLaser[1].position = sf::Vector2f(
@@ -619,39 +577,33 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             target.draw(m_continueText);
         }
 
-        // Draw player health bar at bottom right
         const int healthBarWidth = 200;
         const int healthBarHeight = 20;
-        const int healthBarX = (ScreenWidth - healthBarWidth) / 2;  // Center horizontally
-        const int healthBarY = ScreenHeight - healthBarHeight - 20; // 20 pixels from bottom
+        const int healthBarX = (ScreenWidth - healthBarWidth) / 2;
+        const int healthBarY = ScreenHeight - healthBarHeight - 20;
         const int borderThickness = 2;
 
-        // Draw border
         sf::RectangleShape border(sf::Vector2f(healthBarWidth + 2 * borderThickness,
                                                healthBarHeight + 2 * borderThickness));
         border.setPosition(healthBarX - borderThickness, healthBarY - borderThickness);
         border.setFillColor(sf::Color::Black);
         target.draw(border);
 
-        // Draw background (red)
         sf::RectangleShape healthBarBg(sf::Vector2f(healthBarWidth, healthBarHeight));
         healthBarBg.setPosition(healthBarX, healthBarY);
         healthBarBg.setFillColor(sf::Color(200, 0, 0));
         target.draw(healthBarBg);
 
-        // Draw health (green)
         float healthPercent = m_pPlayer->getHealth() / m_pPlayer->getMaxHealth();
         sf::RectangleShape healthBar(sf::Vector2f(healthBarWidth * healthPercent, healthBarHeight));
         healthBar.setPosition(healthBarX, healthBarY);
 
-        // Color based on regeneration state
         sf::Color healthColor = m_pPlayer->isRegenerating()
-                                    ? sf::Color(100, 255, 100) // Brighter green when regenerating
-                                    : sf::Color(0, 255, 0);    // Normal green
+                                    ? sf::Color(100, 255, 100)
+                                    : sf::Color(0, 255, 0);
         healthBar.setFillColor(healthColor);
         target.draw(healthBar);
 
-        // Draw health text
         sf::Text healthText;
         healthText.setFont(m_font);
         healthText.setString(std::to_string((int)m_pPlayer->getHealth()) + "/" +
@@ -659,14 +611,12 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         healthText.setCharacterSize(16);
         healthText.setFillColor(sf::Color::White);
 
-        // Center text in health bar
         sf::FloatRect textBounds = healthText.getLocalBounds();
         healthText.setPosition(
             healthBarX + (healthBarWidth - textBounds.width) / 2,
             healthBarY + (healthBarHeight - textBounds.height) / 2);
         target.draw(healthText);
 
-        // Draw start message if active
         if (m_showStartMessage)
         {
             // Draw semi-transparent background for better readability
@@ -675,54 +625,45 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             messageBg.setFillColor(sf::Color(0, 0, 0, 128));
             target.draw(messageBg);
 
-            // Draw message with fade out
             sf::Text fadeMessage = m_startMessage;
             fadeMessage.setFillColor(sf::Color(255, 255, 255,
                                                static_cast<sf::Uint8>(255 * std::min(m_messageTimer, 1.0f))));
             target.draw(fadeMessage);
         }
 
-        // Draw timer with animation
         sf::Text timerText;
         timerText.setFont(m_font);
         timerText.setFillColor(sf::Color::White);
         timerText.setString(std::to_string(static_cast<int>(m_survivalTime)));
 
-        // Calculate animation progress (0 to 1)
         float animProgress = 1.0f - (m_timerAnimationTime / TimerAnimationDuration);
 
-        // Calculate current scale using easing
         float scale = InitialTimerScale + (2.0f - InitialTimerScale) * (animProgress * animProgress);
 
-        // Set character size with scale
         timerText.setCharacterSize(static_cast<unsigned int>(36 * scale));
 
-        // Calculate positions
         float startX = ScreenWidth / 2.0f;
         float startY = ScreenHeight / 2.0f;
         float endX = ScreenWidth - 40.0f;
         float endY = 10.0f;
 
-        // Interpolate position with easing
         float currentX = startX + (endX - startX) * (animProgress * animProgress);
         float currentY = startY + (endY - startY) * (animProgress * animProgress);
 
-        // Center the text at its current position
         sf::FloatRect textBounds2 = timerText.getLocalBounds();
         timerText.setOrigin(textBounds2.width / 2.0f, textBounds2.height / 2.0f);
         timerText.setPosition(currentX, currentY);
 
         target.draw(timerText);
 
-        // Draw money counter above health bar
         sf::Text moneyLabel;
         moneyLabel.setFont(m_font);
         moneyLabel.setString("MONEY:");
         moneyLabel.setCharacterSize(20);
         moneyLabel.setFillColor(sf::Color::Yellow);
         moneyLabel.setPosition(
-            healthBarX,       // Align with health bar
-            healthBarY - 40); // 40 pixels above health bar
+            healthBarX,
+            healthBarY - 40);
         target.draw(moneyLabel);
 
         sf::Text moneyText;
@@ -731,11 +672,10 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         moneyText.setCharacterSize(24);
         moneyText.setFillColor(sf::Color::Yellow);
 
-        // Position money amount next to "MONEY:" label
         sf::FloatRect moneyBounds = moneyText.getLocalBounds();
         moneyText.setPosition(
-            moneyLabel.getPosition().x + moneyLabel.getLocalBounds().width + 10, // 10 pixels after label
-            healthBarY - 42);                                                    // Slightly adjusted to align with label
+            moneyLabel.getPosition().x + moneyLabel.getLocalBounds().width + 10,
+            healthBarY - 42);
         target.draw(moneyText);
 
         // Draw messages
@@ -748,13 +688,11 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             messageText.setCharacterSize(24);
             messageText.setFillColor(sf::Color::Yellow);
 
-            // Center text
             sf::FloatRect textBounds = messageText.getLocalBounds();
             messageText.setPosition(
                 (ScreenWidth - textBounds.width) / 2,
                 messageY);
 
-            // Fade out near end of duration
             if (msg.duration < 0.5f)
             {
                 messageText.setFillColor(sf::Color(255, 255, 0,
@@ -768,12 +706,11 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         // Draw purchase information in bottom left
         if (m_state == State::PLAYING)
         {
-            const int TEXT_OFFSET_Y = 60; // Distance from bottom
-            const int LINE_HEIGHT = 25;   // Space between lines
+            const int TEXT_OFFSET_Y = 60;
+            const int LINE_HEIGHT = 25;
 
             std::vector<sf::Text> purchaseTexts;
 
-            // Create upgrade texts
             sf::Text damageText;
             damageText.setFont(m_font);
             damageText.setCharacterSize(20);
@@ -790,11 +727,9 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
                                std::to_string(m_pPlayer->getSlowUpgradeCost()) +
                                ")");
 
-            // Position texts
             damageText.setPosition(20, ScreenHeight - TEXT_OFFSET_Y);
             slowText.setPosition(20, ScreenHeight - TEXT_OFFSET_Y + LINE_HEIGHT);
 
-            // Draw texts
             target.draw(damageText);
             target.draw(slowText);
         }
@@ -956,14 +891,13 @@ void Game::shootLaser()
 
             if (distToVamp < 0.5f) // Hit radius
             {
-                // Use player's current gun damage
+
                 (*it)->damage(m_pPlayer->getGunDamage());
 
-                // Remove vampire if dead and award money
                 if ((*it)->isDead())
                 {
                     // Award money equal to vampire's max health
-                    int moneyReward = static_cast<int>((*it)->getMaxHealth()); // Linear scaling: 100 money for 100hp, 500 for 500hp
+                    int moneyReward = static_cast<int>((*it)->getMaxHealth());
                     m_pPlayer->addMoney(moneyReward);
                     it = m_pVampires.erase(it);
 
@@ -985,14 +919,12 @@ void Game::shootLaser()
         }
     }
 
-    // Set the new laser shot
     m_laserShot = {
-        startX, startY, // start position
-        dirX, dirY,     // direction
-        distance,       // distance to hit
-        LaserLifetime,  // lifetime
-        true            // active
-    };
+        startX, startY,
+        dirX, dirY,
+        distance,
+        LaserLifetime,
+        true};
 }
 
 void Game::showMessage(const std::string &msg, float duration)

@@ -22,7 +22,10 @@ const float VampireHeight = 32.0f;
 const float VampireWidth = 32.0f;
 const float VampireSpeed = 1.0f;
 
-const int MaxVampires = 20;
+const int MaxVampires = 30;
+
+const int FixedHealthBarWidth = 40;
+const int FixedHealthBarHeight = 4;
 
 const float LaserLifetime = 0.1;
 

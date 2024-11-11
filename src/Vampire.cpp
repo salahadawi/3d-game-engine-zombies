@@ -10,7 +10,6 @@ Vampire::Vampire(Game *game, sf::Vector2f position) : m_pGame(game), m_position(
 
 void Vampire::update(float deltaTime)
 {
-    // Update attack cooldown
     if (m_attackCooldown > 0)
     {
         m_attackCooldown -= deltaTime;
@@ -19,7 +18,6 @@ void Vampire::update(float deltaTime)
     sf::Vector2f playerPosition = m_pGame->getPlayer()->getPosition();
     sf::Vector2f direction = VecNormalized(playerPosition - m_position);
 
-    // Store current position in case we need to revert
     sf::Vector2f oldPosition = m_position;
 
     // Calculate next position using current speed
@@ -53,7 +51,7 @@ void Vampire::update(float deltaTime)
     sf::Vector2f toPlayer = playerPosition - m_position;
     float distanceToPlayer = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
 
-    if (distanceToPlayer < 0.5f) // Collision radius
+    if (distanceToPlayer < 0.5f)
     {
         if (m_attackCooldown <= 0) // Only deal damage if attack is ready
         {
@@ -65,7 +63,6 @@ void Vampire::update(float deltaTime)
                 m_pGame->getPlayer()->setIsDead(true);
             }
         }
-        // Always move back to old position on collision
         m_position = oldPosition;
     }
 
@@ -77,7 +74,7 @@ void Vampire::update(float deltaTime)
             sf::Vector2f toOtherVampire = otherVampire->getPosition() - m_position;
             float distanceToVampire = sqrt(toOtherVampire.x * toOtherVampire.x + toOtherVampire.y * toOtherVampire.y);
 
-            if (distanceToVampire < 0.5f) // Same collision radius
+            if (distanceToVampire < 0.5f)
             {
                 m_position = oldPosition;
                 break;

@@ -14,7 +14,6 @@ Minimap::Minimap(Game *pGame) : m_pGame(pGame), m_pPlayer(pGame->getPlayer())
 
 void Minimap::drawMinimap(sf::RenderTarget &target, sf::Image &buffer) const
 {
-    // draw minimap
     for (int y = 0; y < GridHeight; y++)
     {
         for (int x = 0; x < GridWidth; x++)
@@ -51,14 +50,11 @@ void Minimap::drawMinimap(sf::RenderTarget &target, sf::Image &buffer) const
     // draw cone showing player direction
     sf::VertexArray cone(sf::TriangleFan, 3);
 
-    // Cone point at center of player circle
     cone[0].position = sf::Vector2f(m_pPlayer->getPosition().x * 10, m_pPlayer->getPosition().y * 10);
 
-    // Calculate perpendicular vector for cone width
     float perpX = -m_pPlayer->getDirY();
     float perpY = m_pPlayer->getDirX();
 
-    // Two points forming cone base
     cone[1].position = sf::Vector2f(
         m_pPlayer->getPosition().x * 10 + m_pPlayer->getDirX() * 20 + perpX * 8,
         m_pPlayer->getPosition().y * 10 + m_pPlayer->getDirY() * 20 + perpY * 8);
@@ -66,7 +62,6 @@ void Minimap::drawMinimap(sf::RenderTarget &target, sf::Image &buffer) const
         m_pPlayer->getPosition().x * 10 + m_pPlayer->getDirX() * 20 - perpX * 8,
         m_pPlayer->getPosition().y * 10 + m_pPlayer->getDirY() * 20 - perpY * 8);
 
-    // Set colors
     cone[0].color = sf::Color::Yellow;
     cone[0].color.a = 128;
     cone[1].color = sf::Color::Yellow;
@@ -90,7 +85,6 @@ void Minimap::drawMinimap(sf::RenderTarget &target, sf::Image &buffer) const
     if (laserShot.active)
     {
 
-        // Draw laser in minimap (keep this thinner)
         sf::VertexArray minimapLaser(sf::Lines, 2);
         minimapLaser[0].position = sf::Vector2f(m_pGame->getLaserShot().startX * 10, m_pGame->getLaserShot().startY * 10);
         minimapLaser[1].position = sf::Vector2f(

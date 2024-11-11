@@ -117,7 +117,6 @@ private:
 
     float m_baseVampireSpeed = VampireSpeed;
 
-    // Message system
     struct Message
     {
         std::string text;
@@ -125,7 +124,6 @@ private:
     };
     std::vector<Message> m_messages;
 
-    // Vampire speed control
     float m_vampireSpeedMultiplier = 1.0f;
     float m_slowTimer = 0.0f;
 
