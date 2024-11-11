@@ -1,10 +1,8 @@
 #include "Player.h"
 #include "InputHandler.h"
 #include "Constants.h"
-#include "Coin.h"
 #include <vector>
 #include "Game.h"
-#include "Door.h"
 #include <cmath>
 #include "Vampire.h"
 

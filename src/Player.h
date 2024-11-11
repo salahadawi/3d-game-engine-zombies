@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Rectangle.h"
 #include "Constants.h"
 #include <cmath>
+#include <SFML/Graphics.hpp>
 
 struct InputData;
 
@@ -18,8 +18,6 @@ public:
     void move(InputData inputData, float deltaTime);
     void updatePhysics(float deltaTime);
     void update(float deltaTime);
-
-    int getCoins() const { return m_coins; };
 
     bool isDead() const { return m_isDead; }
     void setIsDead(bool isDead) { m_isDead = isDead; }
@@ -57,11 +55,9 @@ public:
     int getSlowUpgradeCost() const { return 300 + (m_slowUpgradeCount * 150); }
 
 private:
-    bool m_isGrounded;
     bool m_isDead = false;
     float m_jumpTimer = 0.0f;
     Game *m_pGame;
-    int m_coins = 0;
 
     sf::Vector2f m_position;
     float m_dirX = 1;

@@ -96,8 +96,8 @@ void Minimap::drawMinimap(sf::RenderTarget &target, sf::Image &buffer) const
         minimapLaser[1].position = sf::Vector2f(
             (laserShot.startX + laserShot.dirX * laserShot.distance) * 10,
             (laserShot.startY + laserShot.dirY * laserShot.distance) * 10);
-        minimapLaser[0].color = sf::Color(0, 255, 0, 255 * (laserShot.lifetime / LASER_LIFETIME));
-        minimapLaser[1].color = sf::Color(0, 255, 0, 255 * (laserShot.lifetime / LASER_LIFETIME));
+        minimapLaser[0].color = sf::Color(0, 255, 0, 255 * (laserShot.lifetime / LaserLifetime));
+        minimapLaser[1].color = sf::Color(0, 255, 0, 255 * (laserShot.lifetime / LaserLifetime));
 
         target.draw(minimapLaser);
     }

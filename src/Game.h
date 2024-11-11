@@ -11,11 +11,7 @@
 #include "Minimap.h"
 
 class Player;
-class Game;
 class GameInput;
-class Rectangle;
-class Coin;
-class Door;
 class Vampire;
 
 struct LaserShot;
@@ -60,10 +56,6 @@ public:
     void onMousePressed(sf::Mouse::Button button);
     void onMouseReleased(sf::Mouse::Button button);
 
-    Door *getDoor();
-    std::vector<Rectangle *> getRectangles() const;
-    std::vector<Coin *> getCoins();
-
     sf::RenderWindow *getWindow() const { return m_pWindow; }
 
     sf::Text *getContinueText() { return &m_continueText; }
@@ -83,14 +75,9 @@ public:
     void showMessage(const std::string &msg, float duration);
     void slowVampires();
 
-    void drawMinimap(sf::RenderTarget &target, sf::Image &buffer) const;
-
 private:
     std::unique_ptr<Player> m_pPlayer;
-    std::unique_ptr<Door> m_pDoor;
 
-    std::vector<std::unique_ptr<Rectangle>> m_pRectangles;
-    std::vector<std::unique_ptr<Coin>> m_pCoins;
     std::vector<std::unique_ptr<Vampire>> m_pVampires;
 
     State m_state;
@@ -114,10 +101,9 @@ private:
     sf::Texture m_vampTexture;
     sf::Texture m_rayGunTexture;
 
-    LaserShot m_laserShot;            // Single laser shot instead of vector
-    const float LASER_LIFETIME = 0.1; // Laser visible for 0.1 seconds
+    LaserShot m_laserShot;
 
-    float m_messageTimer = 3.0f; // Show message for 3 seconds
+    float m_messageTimer = 3.0f;
     bool m_showStartMessage = true;
     sf::Text m_startMessage;
 
@@ -125,17 +111,11 @@ private:
     sf::Text m_gameOverText;
     sf::Text m_finalScoreText;
 
-    float m_timerAnimationTime = 2.0f; // Animation duration
-    const float TIMER_ANIMATION_DURATION = 2.0f;
-    const float INITIAL_TIMER_SCALE = 4.0f; // Initial size multiplier
+    float m_timerAnimationTime = 2.0f;
 
     float m_baseVampireHealth = 100.0f;
-    const float HEALTH_INCREASE_RATE = 10.0f; // HP increase per second
-    const float MAX_VAMPIRE_HEALTH = 500.0f;  // Maximum vampire health
 
     float m_baseVampireSpeed = VampireSpeed;
-    const float SPEED_INCREASE_RATE = 0.5f;              // Speed increase per second
-    const float MAX_VAMPIRE_SPEED = VampireSpeed * 3.0f; // Maximum speed (3x initial speed)
 
     // Message system
     struct Message
@@ -147,7 +127,6 @@ private:
 
     // Vampire speed control
     float m_vampireSpeedMultiplier = 1.0f;
-    const float SLOW_DURATION = 10.0f; // Slow effect lasts 10 seconds
     float m_slowTimer = 0.0f;
 
     Minimap m_minimap;

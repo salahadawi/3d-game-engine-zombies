@@ -8,9 +8,6 @@
 #include "InputHandler.h"
 #include "Player.h"
 #include "ResourceManager.h"
-#include "Rectangle.h"
-#include "Coin.h"
-#include "Door.h"
 #include "Vampire.h"
 #include "LaserShot.h"
 #include "Minimap.h"
@@ -18,7 +15,6 @@
 Game::Game() : m_state(State::PLAYING),
                m_pClock(std::make_unique<sf::Clock>()),
                m_pPlayer(std::make_unique<Player>(this)),
-               m_pDoor(std::make_unique<Door>(this)),
                m_score(0),
                m_clearedLevels(0),
                m_minimap(Minimap(this))
@@ -171,12 +167,12 @@ void Game::update(float deltaTime)
         }
 
         // Increase base vampire health over time
-        m_baseVampireHealth = std::min(m_baseVampireHealth + HEALTH_INCREASE_RATE * deltaTime,
-                                       MAX_VAMPIRE_HEALTH);
+        m_baseVampireHealth = std::min(m_baseVampireHealth + HealthIncreaseRate * deltaTime,
+                                       MaxVampireHealth);
 
         // Increase base vampire speed over time
-        m_baseVampireSpeed = std::min(m_baseVampireSpeed + SPEED_INCREASE_RATE * deltaTime,
-                                      MAX_VAMPIRE_SPEED);
+        m_baseVampireSpeed = std::min(m_baseVampireSpeed + SpeedIncreaseRate * deltaTime,
+                                      MaxVampireSpeed);
 
         // Update existing vampires' speed
         for (auto &vampire : m_pVampires)
@@ -209,8 +205,8 @@ void Game::update(float deltaTime)
         }
 
         // Update vampire speeds
-        m_baseVampireSpeed = std::min(m_baseVampireSpeed + SPEED_INCREASE_RATE * deltaTime,
-                                      MAX_VAMPIRE_SPEED) *
+        m_baseVampireSpeed = std::min(m_baseVampireSpeed + SpeedIncreaseRate * deltaTime,
+                                      MaxVampireSpeed) *
                              m_vampireSpeedMultiplier;
     }
 }
@@ -554,7 +550,7 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         if (m_laserShot.active)
         {
             // Calculate laser progress (0 to 1) based on lifetime
-            float progress = 1.0f - (m_laserShot.lifetime / LASER_LIFETIME);
+            float progress = 1.0f - (m_laserShot.lifetime / LaserLifetime);
 
             // Start position (ray gun)
             sf::Vector2f startPos(ScreenWidth - 240, ScreenHeight - 200);
@@ -595,7 +591,7 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
                     currentEnd.y + perpY);
 
                 // Green laser with fade out
-                sf::Color laserColor(0, 255, 0, 255 * (m_laserShot.lifetime * 2 / LASER_LIFETIME));
+                sf::Color laserColor(0, 255, 0, 255 * (m_laserShot.lifetime * 2 / LaserLifetime));
                 laserLine[0].color = laserColor;
                 laserLine[1].color = laserColor;
 
@@ -608,8 +604,8 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             minimapLaser[1].position = sf::Vector2f(
                 (m_laserShot.startX + m_laserShot.dirX * m_laserShot.distance) * 10,
                 (m_laserShot.startY + m_laserShot.dirY * m_laserShot.distance) * 10);
-            minimapLaser[0].color = sf::Color(0, 255, 0, 255 * (m_laserShot.lifetime / LASER_LIFETIME));
-            minimapLaser[1].color = sf::Color(0, 255, 0, 255 * (m_laserShot.lifetime / LASER_LIFETIME));
+            minimapLaser[0].color = sf::Color(0, 255, 0, 255 * (m_laserShot.lifetime / LaserLifetime));
+            minimapLaser[1].color = sf::Color(0, 255, 0, 255 * (m_laserShot.lifetime / LaserLifetime));
 
             target.draw(minimapLaser);
         }
@@ -693,10 +689,10 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         timerText.setString(std::to_string(static_cast<int>(m_survivalTime)));
 
         // Calculate animation progress (0 to 1)
-        float animProgress = 1.0f - (m_timerAnimationTime / TIMER_ANIMATION_DURATION);
+        float animProgress = 1.0f - (m_timerAnimationTime / TimerAnimationDuration);
 
         // Calculate current scale using easing
-        float scale = INITIAL_TIMER_SCALE + (2.0f - INITIAL_TIMER_SCALE) * (animProgress * animProgress);
+        float scale = InitialTimerScale + (2.0f - InitialTimerScale) * (animProgress * animProgress);
 
         // Set character size with scale
         timerText.setCharacterSize(static_cast<unsigned int>(36 * scale));
@@ -828,33 +824,6 @@ void Game::onMousePressed(sf::Mouse::Button button)
 void Game::onMouseReleased(sf::Mouse::Button button)
 {
     m_pGameInput->onMouseReleased(button);
-}
-
-std::vector<Coin *> Game::getCoins()
-{
-    std::vector<Coin *> pCoins;
-
-    for (auto &temp : m_pCoins)
-    {
-        pCoins.push_back(temp.get());
-    }
-    return pCoins;
-}
-
-std::vector<Rectangle *> Game::getRectangles() const
-{
-    std::vector<Rectangle *> pRectangles;
-
-    for (auto &pRectangle : m_pRectangles)
-    {
-        pRectangles.push_back(pRectangle.get());
-    }
-    return (pRectangles);
-}
-
-Door *Game::getDoor()
-{
-    return m_pDoor.get();
 }
 
 void Game::vampireSpawner(float deltaTime)
@@ -1021,7 +990,7 @@ void Game::shootLaser()
         startX, startY, // start position
         dirX, dirY,     // direction
         distance,       // distance to hit
-        LASER_LIFETIME, // lifetime
+        LaserLifetime,  // lifetime
         true            // active
     };
 }
@@ -1034,5 +1003,5 @@ void Game::showMessage(const std::string &msg, float duration)
 void Game::slowVampires()
 {
     m_vampireSpeedMultiplier = 0.5f; // Slow to 50% speed
-    m_slowTimer = SLOW_DURATION;
+    m_slowTimer = SlowDuration;
 }
