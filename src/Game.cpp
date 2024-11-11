@@ -42,6 +42,11 @@ bool Game::initialise(sf::RenderWindow &window)
         std::cerr << "Unable to load texture" << std::endl;
         return false;
     }
+    if (!m_rayGunTexture.loadFromFile(ResourceManager::getFilePath("raygun.png")))
+    {
+        std::cerr << "Unable to load texture" << std::endl;
+        return false;
+    }
 
     m_continueText.setFont(m_font);
     m_continueText.setString("Continue");
@@ -475,6 +480,16 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         vampireShape.setPosition(vampire->getPosition().x * 10 - 5, vampire->getPosition().y * 10 - 5);
         target.draw(vampireShape);
     }
+
+    sf::Sprite rayGunSprite(m_rayGunTexture);
+    rayGunSprite.setScale(0.8f, 0.8f);
+
+    // Calculate gun position with bobbing effect based on player position
+    float xOffset = std::sin(m_pPlayer->getPosition().x * 2.0f) * 5.0f;
+    float yOffset = std::cos(m_pPlayer->getPosition().y * 2.0f) * 5.0f;
+
+    rayGunSprite.setPosition(ScreenWidth - 256 + xOffset, ScreenHeight - 256 + yOffset);
+    target.draw(rayGunSprite);
 
     if (m_state == State::PAUSED)
     {

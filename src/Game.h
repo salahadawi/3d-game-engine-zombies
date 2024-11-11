@@ -95,4 +95,5 @@ private:
     int m_spawnCount = 0;
 
     sf::Texture m_vampTexture;
+    sf::Texture m_rayGunTexture;
 };
