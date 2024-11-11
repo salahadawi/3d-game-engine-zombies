@@ -27,6 +27,7 @@ public:
     {
         PAUSED,
         PLAYING,
+        GAME_OVER
     };
 
     enum class HitType
@@ -110,4 +111,14 @@ private:
 
     LaserShot m_laserShot;            // Single laser shot instead of vector
     const float LASER_LIFETIME = 0.1; // Laser visible for 0.1 seconds
+
+    float m_messageTimer = 3.0f; // Show message for 3 seconds
+    bool m_showStartMessage = true;
+    sf::Text m_startMessage;
+
+    float m_survivalTime = 0.0f;
+    sf::Text m_gameOverText;
+    sf::Text m_finalScoreText;
+
+    void formatTime(float seconds, char *buffer) const;
 };
