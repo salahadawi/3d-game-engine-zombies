@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     window.setMouseCursorGrabbed(true);
 
     std::unique_ptr<Game> pGame = std::make_unique<Game>();
-    if (!pGame->initialise(window.getView().getSize()))
+    if (!pGame->initialise(window))
     {
         std::cerr << "Game Failed to initialise" << std::endl;
         return 1;
@@ -44,12 +44,29 @@ int main(int argc, char *argv[])
             case sf::Event::KeyReleased:
                 pGame->onKeyReleased(event.key.code);
                 break;
+            case sf::Event::MouseButtonPressed:
+                pGame->onMousePressed(event.mouseButton.button);
+                break;
+            case sf::Event::MouseButtonReleased:
+                pGame->onMouseReleased(event.mouseButton.button);
+                break;
             case sf::Event::MouseMoved:
                 pGame->getInput(window);
                 break;
             default:
                 break;
             }
+        }
+
+        if (pGame->getState() == Game::State::PLAYING)
+        {
+            window.setMouseCursorVisible(false);
+            window.setMouseCursorGrabbed(true);
+        }
+        else
+        {
+            window.setMouseCursorVisible(true);
+            window.setMouseCursorGrabbed(false);
         }
 
         sf::Time elapsedTime = clock.getElapsedTime();

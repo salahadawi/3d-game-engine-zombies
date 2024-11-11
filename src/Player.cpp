@@ -99,56 +99,9 @@ void Player::move(InputData inputData, float deltaTime)
 
 void Player::updatePhysics(float deltaTime)
 {
-    m_jumpTimer -= deltaTime;
-    if (m_jumpTimer < 0.0f)
-    {
-        m_jumpTimer = 0.0f;
-    }
-
-    float ySpeed = 0.0f;
-    if (m_jumpTimer > 0.0f)
-    {
-        ySpeed = JumpYVelocity;
-    }
-    else
-    {
-        ySpeed = Gravity;
-    }
-    // sf::Transformable::move(0.0f, ySpeed * deltaTime);
-
-    m_isGrounded = false;
-    // auto pRectangles = m_pGame->getRectangles();
-    // for (auto &pRectangle : pRectangles)
-    // {
-    //     // Move player back if collided with level geometry
-    //     if (pRectangle->collidesWith(this))
-    //     {
-    //         sf::Transformable::move(sf::Vector2f(0.0f, -ySpeed * deltaTime));
-    //         m_isGrounded = true;
-    //     }
-    // }
-
-    m_isDead = getPosition().y > ScreenHeight;
 }
 
 void Player::update(float deltaTime)
 {
-    std::vector<Coin *> Coins = m_pGame->getCoins();
-    int i = 0;
-
-    // for (auto &temp : Coins)
-    // {
-    //     if (temp->collidesWith(this))
-    //     {
-    //         temp->setCollected(true);
-    //         m_coins++;
-    //     }
-    // }
-
-    // if (m_pGame->getDoor()->collidesWith(this))
-    // {
-    //     m_pGame->getDoor()->setTriggered(true);
-    // }
-
     updateSpeed(deltaTime);
 }

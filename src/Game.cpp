@@ -11,7 +11,7 @@
 #include "Coin.h"
 #include "Door.h"
 
-Game::Game() : m_state(State::WAITING),
+Game::Game() : m_state(State::PLAYING),
                m_pClock(std::make_unique<sf::Clock>()),
                m_pPlayer(std::make_unique<Player>(this)),
                m_pDoor(std::make_unique<Door>(this)),
@@ -26,8 +26,9 @@ Game::~Game()
 {
 }
 
-bool Game::initialise(sf::Vector2f pitchSize)
+bool Game::initialise(sf::RenderWindow &window)
 {
+    m_pWindow = &window;
     m_pClock->restart();
     // std::string assetPath = Resources::getAssetPath();
     if (!m_font.loadFromFile(ResourceManager::getFilePath("Action_Man.ttf")))
@@ -35,6 +36,11 @@ bool Game::initialise(sf::Vector2f pitchSize)
         std::cerr << "Unable to load font" << std::endl;
         return false;
     }
+
+    m_continueText.setFont(m_font);
+    m_continueText.setString("Continue");
+    m_continueText.setFillColor(sf::Color::White);
+    m_continueText.setPosition(ScreenWidth / 2 - m_continueText.getLocalBounds().getSize().x / 2, ScreenHeight / 2 - m_continueText.getLocalBounds().getSize().y / 2);
 
     // Initialize shapes from TileMap
     resetLevel();
@@ -93,52 +99,22 @@ void Game::resetLevel()
 
 void Game::update(float deltaTime)
 {
-    if (m_pClock->getElapsedTime().asSeconds() >= 3.f)
+    if (m_state == State::PLAYING)
     {
-        m_state = State::ACTIVE;
-    }
 
-    m_pGameInput->update(deltaTime);
-    m_pPlayer->updatePhysics(deltaTime);
-    m_pPlayer->update(deltaTime);
+        m_pGameInput->update(deltaTime);
+        m_pPlayer->updatePhysics(deltaTime);
+        m_pPlayer->update(deltaTime);
+    }
 
     if (m_pPlayer->isDead())
         resetLevel();
-
-    if (m_pDoor->isTriggered())
-    {
-        m_clearedLevels++;
-        if (m_clearedLevels == LevelCount)
-        {
-            m_clearedLevels = 0;
-            m_score = 0;
-            m_state = State::WAITING;
-            m_pClock->restart();
-            resetLevel();
-        }
-        else
-        {
-            resetLevel();
-        }
-    }
-
-    int i = 0;
-    while (i < m_pCoins.size())
-    {
-        if (m_pCoins[i]->getCollected())
-        {
-            std::swap(m_pCoins[i], m_pCoins.back());
-            m_pCoins.pop_back();
-            continue;
-        }
-        i++;
-    }
 }
 
 void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
     //  Draw texts.
-    if (m_state == State::WAITING)
+    if (m_state == State::PAUSED)
     {
         sf::Text startText;
         startText.setFont(m_font);
@@ -303,6 +279,15 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
     texture.loadFromImage(buffer);
     sf::Sprite sprite(texture);
     target.draw(sprite);
+
+    if (m_state == State::PAUSED)
+    {
+        sf::RectangleShape halfTransparent(sf::Vector2f(ScreenWidth, ScreenHeight));
+        halfTransparent.setFillColor(sf::Color(0, 0, 0, 192));
+        target.draw(halfTransparent);
+
+        target.draw(m_continueText);
+    }
 }
 
 void Game::onKeyPressed(sf::Keyboard::Key key)
@@ -318,6 +303,16 @@ void Game::onKeyReleased(sf::Keyboard::Key key)
 void Game::getInput(sf::RenderWindow &window)
 {
     m_pGameInput->getInput(window);
+}
+
+void Game::onMousePressed(sf::Mouse::Button button)
+{
+    m_pGameInput->onMousePressed(button);
+}
+
+void Game::onMouseReleased(sf::Mouse::Button button)
+{
+    m_pGameInput->onMouseReleased(button);
 }
 
 std::vector<Coin *> Game::getCoins()

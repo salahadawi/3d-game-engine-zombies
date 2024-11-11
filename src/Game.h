@@ -24,27 +24,35 @@ class Game : public sf::Drawable
 public:
     enum class State
     {
-        WAITING,
-        ACTIVE,
+        PAUSED,
+        PLAYING,
     };
 
     Game();
     ~Game();
 
-    bool initialise(sf::Vector2f pitchSize);
+    bool initialise(sf::RenderWindow &window);
     void update(float deltaTime);
     void resetLevel();
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
     State getState() const { return m_state; }
 
+    State togglePause() { return m_state = m_state == State::PAUSED ? State::PLAYING : State::PAUSED; }
+
     void onKeyPressed(sf::Keyboard::Key key);
     void onKeyReleased(sf::Keyboard::Key key);
     void getInput(sf::RenderWindow &window);
+    void onMousePressed(sf::Mouse::Button button);
+    void onMouseReleased(sf::Mouse::Button button);
 
     Door *getDoor();
     std::vector<Rectangle *> getRectangles() const;
     std::vector<Coin *> getCoins();
+
+    sf::RenderWindow *getWindow() const { return m_pWindow; }
+
+    sf::Text *getContinueText() { return &m_continueText; }
 
 private:
     std::unique_ptr<Player> m_pPlayer;
@@ -62,4 +70,8 @@ private:
     int m_score;
 
     sf::Font m_font;
+
+    sf::RenderWindow *m_pWindow;
+
+    sf::Text m_continueText;
 };
