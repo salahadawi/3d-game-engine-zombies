@@ -159,6 +159,12 @@ void Game::update(float deltaTime)
                 (ScreenWidth - scoreBounds.width) / 2,
                 ScreenHeight / 2);
         }
+
+        // Update timer animation
+        if (m_timerAnimationTime > 0.0f)
+        {
+            m_timerAnimationTime = std::max(0.0f, m_timerAnimationTime - deltaTime);
+        }
     }
 }
 
@@ -701,13 +707,36 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             target.draw(fadeMessage);
         }
 
-        // Draw timer
+        // Draw timer with animation
         sf::Text timerText;
         timerText.setFont(m_font);
-        timerText.setCharacterSize(36);
         timerText.setFillColor(sf::Color::White);
         timerText.setString(std::to_string(static_cast<int>(m_survivalTime)));
-        timerText.setPosition(ScreenWidth - timerText.getLocalBounds().width - 20, 10);
+
+        // Calculate animation progress (0 to 1)
+        float animProgress = 1.0f - (m_timerAnimationTime / TIMER_ANIMATION_DURATION);
+
+        // Calculate current scale using easing
+        float scale = INITIAL_TIMER_SCALE + (2.0f - INITIAL_TIMER_SCALE) * (animProgress * animProgress);
+
+        // Set character size with scale
+        timerText.setCharacterSize(static_cast<unsigned int>(36 * scale));
+
+        // Calculate positions
+        float startX = ScreenWidth / 2.0f;
+        float startY = ScreenHeight / 2.0f;
+        float endX = ScreenWidth - 40.0f;
+        float endY = 10.0f;
+
+        // Interpolate position with easing
+        float currentX = startX + (endX - startX) * (animProgress * animProgress);
+        float currentY = startY + (endY - startY) * (animProgress * animProgress);
+
+        // Center the text at its current position
+        sf::FloatRect textBounds2 = timerText.getLocalBounds();
+        timerText.setOrigin(textBounds2.width / 2.0f, textBounds2.height / 2.0f);
+        timerText.setPosition(currentX, currentY);
+
         target.draw(timerText);
     }
 }

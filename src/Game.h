@@ -120,5 +120,9 @@ private:
     sf::Text m_gameOverText;
     sf::Text m_finalScoreText;
 
+    float m_timerAnimationTime = 2.0f; // Animation duration
+    const float TIMER_ANIMATION_DURATION = 2.0f;
+    const float INITIAL_TIMER_SCALE = 4.0f; // Initial size multiplier
+
     void formatTime(float seconds, char *buffer) const;
 };
