@@ -461,7 +461,6 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
             const int FIXED_HEALTH_BAR_WIDTH = 40; // Fixed width in pixels
             const int FIXED_HEALTH_BAR_HEIGHT = 4; // Fixed height in pixels
 
-            // Position the health bar above the vampire sprite
             int healthBarY = drawStartY - FIXED_HEALTH_BAR_HEIGHT - 2;
 
             if (healthBarY >= 0) // Only draw if health bar is on screen
@@ -745,6 +744,30 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         timerText.setPosition(currentX, currentY);
 
         target.draw(timerText);
+
+        // Draw money counter above health bar
+        sf::Text moneyLabel;
+        moneyLabel.setFont(m_font);
+        moneyLabel.setString("MONEY:");
+        moneyLabel.setCharacterSize(20);
+        moneyLabel.setFillColor(sf::Color::Yellow);
+        moneyLabel.setPosition(
+            (ScreenWidth - healthBarWidth) / 2, // Same x-alignment as health bar
+            healthBarY - 40);                   // 40 pixels above health bar
+        target.draw(moneyLabel);
+
+        sf::Text moneyText;
+        moneyText.setFont(m_font);
+        moneyText.setString("$" + std::to_string(m_pPlayer->getMoney()));
+        moneyText.setCharacterSize(24);
+        moneyText.setFillColor(sf::Color::Yellow);
+
+        // Position money amount next to "MONEY:" label
+        sf::FloatRect moneyBounds = moneyText.getLocalBounds();
+        moneyText.setPosition(
+            moneyLabel.getPosition().x + moneyLabel.getLocalBounds().width + 10, // 10 pixels after label
+            healthBarY - 42);                                                    // Slightly adjusted to align with label
+        target.draw(moneyText);
     }
 }
 
@@ -925,12 +948,15 @@ void Game::shootLaser()
 
             if (distToVamp < 0.5f) // Hit radius
             {
-                // Damage vampire instead of instant kill
-                (*it)->damage(34.0f); // Takes 3 hits to kill
+                // Damage vampire
+                (*it)->damage(34.0f);
 
-                // Remove vampire if dead
+                // Remove vampire if dead and award money
                 if ((*it)->isDead())
                 {
+                    // Award money equal to vampire's max health
+                    int moneyReward = static_cast<int>((*it)->getMaxHealth()); // Linear scaling: 100 money for 100hp, 500 for 500hp
+                    m_pPlayer->addMoney(moneyReward);
                     it = m_pVampires.erase(it);
                 }
                 else

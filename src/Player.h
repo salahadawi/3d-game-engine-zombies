@@ -44,6 +44,9 @@ public:
     void damage(float amount);
     bool isRegenerating() const { return m_timeSinceLastHit > m_regenDelay; }
 
+    void addMoney(int amount) { m_money += amount; }
+    int getMoney() const { return m_money; }
+
 private:
     bool m_isGrounded;
     bool m_isDead = false;
@@ -72,4 +75,6 @@ private:
     float m_timeSinceLastHit = 0.0f;
     const float m_regenDelay = 3.0f; // Start regenerating after 3 seconds
     const float m_regenRate = 20.0f; // Health points per second
+
+    int m_money = 0; // Starting money
 };
