@@ -925,7 +925,8 @@ Door *Game::getDoor()
 
 void Game::vampireSpawner(float deltaTime)
 {
-    if (m_spawnCount >= MaxVampires)
+    // Don't spawn if at max vampires or during slow effect
+    if (m_spawnCount >= MaxVampires || m_slowTimer > 0)
         return;
 
     if (m_vampireCooldown > 0.0f)
