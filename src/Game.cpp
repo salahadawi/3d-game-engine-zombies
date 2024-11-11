@@ -6,7 +6,7 @@
 
 #include "InputHandler.h"
 #include "Player.h"
-#include "resources/Resources.h"
+#include "ResourceManager.h"
 #include "Rectangle.h"
 #include "Coin.h"
 #include "Door.h"
@@ -29,8 +29,8 @@ Game::~Game()
 bool Game::initialise(sf::Vector2f pitchSize)
 {
     m_pClock->restart();
-    std::string assetPath = Resources::getAssetPath();
-    if (!m_font.loadFromFile(assetPath + "Action_Man.ttf"))
+    // std::string assetPath = Resources::getAssetPath();
+    if (!m_font.loadFromFile(ResourceManager::getFilePath("Action_Man.ttf")))
     {
         std::cerr << "Unable to load font" << std::endl;
         return false;

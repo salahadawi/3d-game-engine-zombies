@@ -14,7 +14,7 @@ public:
     Player(Game *pGame);
     virtual ~Player() {}
 
-    bool initialise() {};
+    void initialise() {};
     void move(InputData inputData, float deltaTime);
     void updatePhysics(float deltaTime);
     void update(float deltaTime);

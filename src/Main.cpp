@@ -1,12 +1,17 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
-#include "Game.h"
 #include <memory>
 #include <iostream>
 
-int main()
+#include "Game.h"
+#include "ResourceManager.h"
+
+int main(int argc, char *argv[])
 {
+    // ResourceManager Must be Instantiated here -- DO NOT CHANGE
+    ResourceManager::init(argv[0]);
+
     sf::RenderWindow window(sf::VideoMode(ScreenWidth, ScreenHeight), "Platformer");
     window.setKeyRepeatEnabled(false);
     window.setMouseCursorVisible(false);
