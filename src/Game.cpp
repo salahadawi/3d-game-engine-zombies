@@ -433,6 +433,49 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
     sf::Sprite sprite(texture);
     target.draw(sprite);
 
+    // Draw player in minimap
+    sf::CircleShape playerShape(5);
+    playerShape.setFillColor(sf::Color::Green);
+    playerShape.setPosition(m_pPlayer->getPosition().x * 10 - 5, m_pPlayer->getPosition().y * 10 - 5);
+    target.draw(playerShape);
+
+    // draw cone showing player direction
+    sf::VertexArray cone(sf::TriangleFan, 3);
+
+    // Cone point at center of player circle
+    cone[0].position = sf::Vector2f(m_pPlayer->getPosition().x * 10, m_pPlayer->getPosition().y * 10);
+
+    // Calculate perpendicular vector for cone width
+    float perpX = -m_pPlayer->getDirY();
+    float perpY = m_pPlayer->getDirX();
+
+    // Two points forming cone base
+    cone[1].position = sf::Vector2f(
+        m_pPlayer->getPosition().x * 10 + m_pPlayer->getDirX() * 20 + perpX * 8,
+        m_pPlayer->getPosition().y * 10 + m_pPlayer->getDirY() * 20 + perpY * 8);
+    cone[2].position = sf::Vector2f(
+        m_pPlayer->getPosition().x * 10 + m_pPlayer->getDirX() * 20 - perpX * 8,
+        m_pPlayer->getPosition().y * 10 + m_pPlayer->getDirY() * 20 - perpY * 8);
+
+    // Set colors
+    cone[0].color = sf::Color::Yellow;
+    cone[0].color.a = 128;
+    cone[1].color = sf::Color::Yellow;
+    cone[1].color.a = 128;
+    cone[2].color = sf::Color::Yellow;
+    cone[2].color.a = 128;
+
+    target.draw(cone);
+
+    // draw vampires in minimap
+    for (auto &vampire : m_pVampires)
+    {
+        sf::CircleShape vampireShape(5);
+        vampireShape.setFillColor(sf::Color::Red);
+        vampireShape.setPosition(vampire->getPosition().x * 10 - 5, vampire->getPosition().y * 10 - 5);
+        target.draw(vampireShape);
+    }
+
     if (m_state == State::PAUSED)
     {
         sf::RectangleShape halfTransparent(sf::Vector2f(ScreenWidth, ScreenHeight));
@@ -517,7 +560,7 @@ void Game::vampireSpawner(float deltaTime)
     // else
     //     randomYPos += yMinDist;
 
-    sf::Vector2f spawnPosition = sf::Vector2f(2, 0);
+    sf::Vector2f spawnPosition = sf::Vector2f(2, 2);
     m_pVampires.push_back(std::make_unique<Vampire>(this, spawnPosition));
 
     m_spawnCount++;
