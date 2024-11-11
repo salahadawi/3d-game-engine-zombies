@@ -832,7 +832,7 @@ void Game::vampireSpawner(float deltaTime)
     {
         m_vampireCooldown -= deltaTime;
         return;
-    }
+        }
 
     // Find all spawn points in the map
     std::vector<sf::Vector2f> spawnPoints;

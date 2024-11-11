@@ -6,6 +6,7 @@
 #include "Game.h"
 #include "Door.h"
 #include <cmath>
+#include "Vampire.h"
 
 Player::Player(Game *pGame) : m_pGame(pGame)
 {
@@ -26,8 +27,9 @@ void Player::move(InputData inputData, float deltaTime)
     m_planeX = cos(m_rotation + M_PI / 2);
     m_dirY = sin(m_rotation);
     m_planeY = sin(m_rotation + M_PI / 2);
-    // printf("Rotation: %f\n", m_rotation);
-    // printf("Direction: %f, %f\n", m_dirX, m_dirY);
+
+    // Store current position in case we need to revert
+    sf::Vector2f oldPosition = m_position;
 
     // Forward movement
     if (inputData.m_movingUp)
@@ -94,7 +96,20 @@ void Player::move(InputData inputData, float deltaTime)
             }
         }
     }
-    // printf("Position: %f, %f\n", m_position.x, m_position.y);
+
+    // Check for vampire collisions after movement
+    for (const auto &vampire : m_pGame->getVampires())
+    {
+        sf::Vector2f toVampire = vampire->getPosition() - m_position;
+        float distanceToVampire = sqrt(toVampire.x * toVampire.x + toVampire.y * toVampire.y);
+
+        // If we're too close to a vampire, revert to old position
+        if (distanceToVampire < 0.5f) // Collision radius
+        {
+            m_position = oldPosition;
+            break;
+        }
+    }
 }
 
 void Player::updatePhysics(float deltaTime)

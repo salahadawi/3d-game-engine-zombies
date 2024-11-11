@@ -71,6 +71,8 @@ public:
 
     void shootLaser();
 
+    const std::vector<std::unique_ptr<Vampire>> &getVampires() const { return m_pVampires; }
+
 private:
     std::unique_ptr<Player> m_pPlayer;
     std::unique_ptr<Door> m_pDoor;

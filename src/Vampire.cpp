@@ -19,6 +19,9 @@ void Vampire::update(float deltaTime)
     sf::Vector2f playerPosition = m_pGame->getPlayer()->getPosition();
     sf::Vector2f direction = VecNormalized(playerPosition - m_position);
 
+    // Store current position in case we need to revert
+    sf::Vector2f oldPosition = m_position;
+
     // Calculate next position
     sf::Vector2f nextPosition = m_position;
     float moveAmount = VampireSpeed * deltaTime;
@@ -49,14 +52,36 @@ void Vampire::update(float deltaTime)
     // Check for collision with player
     sf::Vector2f toPlayer = playerPosition - m_position;
     float distanceToPlayer = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
-    if (distanceToPlayer < 0.5f && m_attackCooldown <= 0) // Collision radius and attack ready
-    {
-        m_pGame->getPlayer()->damage(25.0f); // Deal 25 damage on touch
-        m_attackCooldown = ATTACK_DELAY;     // Set attack cooldown
 
-        if (m_pGame->getPlayer()->getHealth() <= 0)
+    if (distanceToPlayer < 0.5f) // Collision radius
+    {
+        if (m_attackCooldown <= 0) // Only deal damage if attack is ready
         {
-            m_pGame->getPlayer()->setIsDead(true);
+            m_pGame->getPlayer()->damage(25.0f);
+            m_attackCooldown = ATTACK_DELAY;
+
+            if (m_pGame->getPlayer()->getHealth() <= 0)
+            {
+                m_pGame->getPlayer()->setIsDead(true);
+            }
+        }
+        // Always move back to old position on collision
+        m_position = oldPosition;
+    }
+
+    // Check for collisions with other vampires
+    for (const auto &otherVampire : m_pGame->getVampires())
+    {
+        if (otherVampire.get() != this) // Don't check collision with self
+        {
+            sf::Vector2f toOtherVampire = otherVampire->getPosition() - m_position;
+            float distanceToVampire = sqrt(toOtherVampire.x * toOtherVampire.x + toOtherVampire.y * toOtherVampire.y);
+
+            if (distanceToVampire < 0.5f) // Same collision radius
+            {
+                m_position = oldPosition;
+                break;
+            }
         }
     }
 }
