@@ -18,4 +18,6 @@ private:
     Game *m_pGame;
     sf::Vector2f m_position;
     float m_health = 100.0f;
+    float m_attackCooldown = 0.0f;
+    const float ATTACK_DELAY = 1.0f; // 1 second between attacks
 };

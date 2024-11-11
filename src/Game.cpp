@@ -623,6 +623,53 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
 
         target.draw(m_continueText);
     }
+
+    // Draw player health bar at bottom center
+    const int healthBarWidth = 200;
+    const int healthBarHeight = 20;
+    const int healthBarX = (ScreenWidth - healthBarWidth) / 2;  // Center horizontally
+    const int healthBarY = ScreenHeight - healthBarHeight - 20; // 20 pixels from bottom
+    const int borderThickness = 2;
+
+    // Draw border
+    sf::RectangleShape border(sf::Vector2f(healthBarWidth + 2 * borderThickness,
+                                           healthBarHeight + 2 * borderThickness));
+    border.setPosition(healthBarX - borderThickness, healthBarY - borderThickness);
+    border.setFillColor(sf::Color::Black);
+    target.draw(border);
+
+    // Draw background (red)
+    sf::RectangleShape healthBarBg(sf::Vector2f(healthBarWidth, healthBarHeight));
+    healthBarBg.setPosition(healthBarX, healthBarY);
+    healthBarBg.setFillColor(sf::Color(200, 0, 0));
+    target.draw(healthBarBg);
+
+    // Draw health (green)
+    float healthPercent = m_pPlayer->getHealth() / m_pPlayer->getMaxHealth();
+    sf::RectangleShape healthBar(sf::Vector2f(healthBarWidth * healthPercent, healthBarHeight));
+    healthBar.setPosition(healthBarX, healthBarY);
+
+    // Color based on regeneration state
+    sf::Color healthColor = m_pPlayer->isRegenerating()
+                                ? sf::Color(100, 255, 100) // Brighter green when regenerating
+                                : sf::Color(0, 255, 0);    // Normal green
+    healthBar.setFillColor(healthColor);
+    target.draw(healthBar);
+
+    // Draw health text
+    sf::Text healthText;
+    healthText.setFont(m_font);
+    healthText.setString(std::to_string((int)m_pPlayer->getHealth()) + "/" +
+                         std::to_string((int)m_pPlayer->getMaxHealth()));
+    healthText.setCharacterSize(16);
+    healthText.setFillColor(sf::Color::White);
+
+    // Center text in health bar
+    sf::FloatRect textBounds = healthText.getLocalBounds();
+    healthText.setPosition(
+        healthBarX + (healthBarWidth - textBounds.width) / 2,
+        healthBarY + (healthBarHeight - textBounds.height) / 2);
+    target.draw(healthText);
 }
 
 void Game::onKeyPressed(sf::Keyboard::Key key)

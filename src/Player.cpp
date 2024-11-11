@@ -101,7 +101,21 @@ void Player::updatePhysics(float deltaTime)
 {
 }
 
+void Player::damage(float amount)
+{
+    m_health = std::max(0.0f, m_health - amount);
+    m_timeSinceLastHit = 0.0f;
+}
+
 void Player::update(float deltaTime)
 {
     updateSpeed(deltaTime);
+
+    // Update health regeneration
+    m_timeSinceLastHit += deltaTime;
+
+    if (m_timeSinceLastHit > m_regenDelay && m_health < m_maxHealth)
+    {
+        m_health = std::min(m_maxHealth, m_health + m_regenRate * deltaTime);
+    }
 }

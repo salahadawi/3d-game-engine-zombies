@@ -39,6 +39,11 @@ public:
 
     void setPosition(sf::Vector2f position) { m_position = position; }
 
+    float getHealth() const { return m_health; }
+    float getMaxHealth() const { return m_maxHealth; }
+    void damage(float amount);
+    bool isRegenerating() const { return m_timeSinceLastHit > m_regenDelay; }
+
 private:
     bool m_isGrounded;
     bool m_isDead = false;
@@ -60,4 +65,11 @@ private:
     int m_busy;
     float m_verticalFOV = VerticalFOVDiv;
     float m_rotation = 0.0f;
+
+    // Health system
+    float m_health = 100.0f;
+    const float m_maxHealth = 100.0f;
+    float m_timeSinceLastHit = 0.0f;
+    const float m_regenDelay = 3.0f; // Start regenerating after 3 seconds
+    const float m_regenRate = 20.0f; // Health points per second
 };
