@@ -122,6 +122,16 @@ void Game::update(float deltaTime)
         {
             temp->update(deltaTime);
         }
+
+        // Update laser shot
+        if (m_laserShot.active)
+        {
+            m_laserShot.lifetime -= deltaTime;
+            if (m_laserShot.lifetime <= 0)
+            {
+                m_laserShot.active = false;
+            }
+        }
     }
 
     if (m_pPlayer->isDead())
@@ -491,6 +501,70 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
     rayGunSprite.setPosition(ScreenWidth - 256 + xOffset, ScreenHeight - 256 + yOffset);
     target.draw(rayGunSprite);
 
+    // Draw laser shot if active
+    if (m_laserShot.active)
+    {
+        // Calculate laser progress (0 to 1) based on lifetime
+        float progress = 1.0f - (m_laserShot.lifetime / LASER_LIFETIME);
+
+        // Start position (ray gun)
+        sf::Vector2f startPos(ScreenWidth - 240, ScreenHeight - 200);
+
+        // End position (screen center)
+        sf::Vector2f endPos(ScreenWidth / 2 + 50, ScreenHeight / 2 + 30);
+
+        // Calculate current position of laser based on progress
+        sf::Vector2f currentStart = startPos + (endPos - startPos) * progress;
+
+        // Laser length (shorter than full distance)
+        float laserLength = 50.0f; // Adjust this value to change laser length
+
+        // Calculate laser end point
+        sf::Vector2f direction = endPos - startPos;
+        float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+        direction /= length; // Normalize
+        sf::Vector2f currentEnd = currentStart + direction * laserLength;
+
+        // Draw thick laser using multiple lines
+        const int laserThickness = 4;
+        const float spacing = 2.0f;
+
+        for (int i = 0; i < laserThickness; i++)
+        {
+            sf::VertexArray laserLine(sf::Lines, 2);
+
+            // Offset perpendicular to laser direction for thickness
+            float perpX = -direction.y * (i - laserThickness / 2.0f) * spacing;
+            float perpY = direction.x * (i - laserThickness / 2.0f) * spacing;
+
+            laserLine[0].position = sf::Vector2f(
+                currentStart.x + perpX,
+                currentStart.y + perpY);
+
+            laserLine[1].position = sf::Vector2f(
+                currentEnd.x + perpX,
+                currentEnd.y + perpY);
+
+            // Green laser with fade out
+            sf::Color laserColor(0, 255, 0, 255 * (m_laserShot.lifetime * 2 / LASER_LIFETIME));
+            laserLine[0].color = laserColor;
+            laserLine[1].color = laserColor;
+
+            target.draw(laserLine);
+        }
+
+        // Draw laser in minimap (keep this thinner)
+        sf::VertexArray minimapLaser(sf::Lines, 2);
+        minimapLaser[0].position = sf::Vector2f(m_laserShot.startX * 10, m_laserShot.startY * 10);
+        minimapLaser[1].position = sf::Vector2f(
+            (m_laserShot.startX + m_laserShot.dirX * m_laserShot.distance) * 10,
+            (m_laserShot.startY + m_laserShot.dirY * m_laserShot.distance) * 10);
+        minimapLaser[0].color = sf::Color(0, 255, 0, 255 * (m_laserShot.lifetime / LASER_LIFETIME));
+        minimapLaser[1].color = sf::Color(0, 255, 0, 255 * (m_laserShot.lifetime / LASER_LIFETIME));
+
+        target.draw(minimapLaser);
+    }
+
     if (m_state == State::PAUSED)
     {
         sf::RectangleShape halfTransparent(sf::Vector2f(ScreenWidth, ScreenHeight));
@@ -584,4 +658,113 @@ void Game::vampireSpawner(float deltaTime)
         m_nextVampireCooldown -= 0.1f;
     }
     m_vampireCooldown = m_nextVampireCooldown;
+}
+
+void Game::shootLaser()
+{
+    if (m_state != State::PLAYING || m_laserShot.active)
+        return;
+
+    // Use player's position and direction for the laser
+    float startX = m_pPlayer->getPosition().x;
+    float startY = m_pPlayer->getPosition().y;
+    float dirX = m_pPlayer->getDirX();
+    float dirY = m_pPlayer->getDirY();
+
+    // Raycasting for laser hit detection
+    float deltaDistX = std::abs(1.0f / dirX);
+    float deltaDistY = std::abs(1.0f / dirY);
+
+    int mapX = int(startX);
+    int mapY = int(startY);
+
+    float sideDistX, sideDistY;
+    int stepX, stepY;
+
+    if (dirX < 0)
+    {
+        stepX = -1;
+        sideDistX = (startX - mapX) * deltaDistX;
+    }
+    else
+    {
+        stepX = 1;
+        sideDistX = (mapX + 1.0f - startX) * deltaDistX;
+    }
+    if (dirY < 0)
+    {
+        stepY = -1;
+        sideDistY = (startY - mapY) * deltaDistY;
+    }
+    else
+    {
+        stepY = 1;
+        sideDistY = (mapY + 1.0f - startY) * deltaDistY;
+    }
+
+    // Perform DDA
+    float distance = 0.0f;
+    bool hit = false;
+    bool hitVampire = false;
+    int side;
+
+    while (!hit && distance < 20.0f) // Maximum laser range of 20 units
+    {
+        if (sideDistX < sideDistY)
+        {
+            sideDistX += deltaDistX;
+            mapX += stepX;
+            side = 0;
+            distance = (mapX - startX + (1 - stepX) / 2) / dirX;
+        }
+        else
+        {
+            sideDistY += deltaDistY;
+            mapY += stepY;
+            side = 1;
+            distance = (mapY - startY + (1 - stepY) / 2) / dirY;
+        }
+
+        // Check for wall hits
+        if (mapX >= 0 && mapX < GridWidth && mapY >= 0 && mapY < GridHeight)
+        {
+            if (MapArray1[mapY * GridWidth + mapX] > 0)
+            {
+                hit = true;
+            }
+        }
+
+        // Check for vampire hits
+        float currentX = startX + dirX * distance;
+        float currentY = startY + dirY * distance;
+
+        for (auto it = m_pVampires.begin(); it != m_pVampires.end();)
+        {
+            sf::Vector2f vampPos = (*it)->getPosition();
+            float dx = vampPos.x - currentX;
+            float dy = vampPos.y - currentY;
+            float distToVamp = sqrt(dx * dx + dy * dy);
+
+            if (distToVamp < 0.5f) // Hit radius
+            {
+                it = m_pVampires.erase(it);
+                hitVampire = true;
+                hit = true;
+                break;
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+
+    // Set the new laser shot
+    m_laserShot = {
+        startX, startY, // start position
+        dirX, dirY,     // direction
+        distance,       // distance to hit
+        LASER_LIFETIME, // lifetime
+        true            // active
+    };
 }

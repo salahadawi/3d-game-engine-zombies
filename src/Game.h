@@ -68,6 +68,8 @@ public:
 
     sf::Texture *getVampTexture() { return &m_vampTexture; }
 
+    void shootLaser();
+
 private:
     std::unique_ptr<Player> m_pPlayer;
     std::unique_ptr<Door> m_pDoor;
@@ -96,4 +98,16 @@ private:
 
     sf::Texture m_vampTexture;
     sf::Texture m_rayGunTexture;
+
+    struct LaserShot
+    {
+        float startX, startY; // Starting position
+        float dirX, dirY;     // Direction
+        float distance;       // Distance to hit
+        float lifetime;       // How long to show the laser
+        bool active;          // Whether there's currently an active laser
+    };
+
+    LaserShot m_laserShot;            // Single laser shot instead of vector
+    const float LASER_LIFETIME = 0.1; // Laser visible for 0.1 seconds
 };
