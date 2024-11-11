@@ -825,6 +825,9 @@ Door *Game::getDoor()
 
 void Game::vampireSpawner(float deltaTime)
 {
+    if (m_spawnCount >= MaxVampires)
+        return;
+
     if (m_vampireCooldown > 0.0f)
     {
         m_vampireCooldown -= deltaTime;
@@ -958,6 +961,8 @@ void Game::shootLaser()
                     int moneyReward = static_cast<int>((*it)->getMaxHealth()); // Linear scaling: 100 money for 100hp, 500 for 500hp
                     m_pPlayer->addMoney(moneyReward);
                     it = m_pVampires.erase(it);
+
+                    m_spawnCount--;
                 }
                 else
                 {

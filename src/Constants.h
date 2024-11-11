@@ -22,6 +22,8 @@ const float VampireHeight = 32.0f;
 const float VampireWidth = 32.0f;
 const float VampireSpeed = 1.0f;
 
+const int MaxVampires = 20;
+
 const float CoinRadius = 17.0f;
 
 // const int GridSize = 16;
