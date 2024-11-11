@@ -429,9 +429,14 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
     {
         for (int x = 0; x < GridWidth; x++)
         {
-            sf::Color color = (MapArray1[x + y * GridWidth] == 1)
-                                  ? sf::Color(116, 60, 39) // Brown for walls
-                                  : sf::Color(51, 28, 17); // Darker brown for floor
+            sf::Color color;
+            if (MapArray1[x + y * GridWidth] == 1)
+                color = sf::Color(116, 60, 39); // Brown for walls
+            else if (MapArray1[x + y * GridWidth] == 3)
+                color = sf::Color(128, 0, 128); // Purple for zombie spawns
+            else
+                color = sf::Color(51, 28, 17); // Darker brown for floor
+
             // Draw 10x10 block for each map point
             for (int blockY = 0; blockY < 10; blockY++)
             {
@@ -635,21 +640,23 @@ void Game::vampireSpawner(float deltaTime)
         return;
     }
 
-    // float randomXPos = rand() % ScreenWidth;
-    // float randomYPos = rand() % ScreenHeight;
+    // Find all spawn points in the map
+    std::vector<sf::Vector2f> spawnPoints;
+    for (int y = 0; y < GridHeight; y++)
+    {
+        for (int x = 0; x < GridWidth; x++)
+        {
+            if (MapArray1[y * GridWidth + x] == 3)
+            {
+                spawnPoints.push_back(sf::Vector2f(x, y));
+            }
+        }
+    }
 
-    // float distToRight = (float)ScreenWidth - randomXPos;
-    // float distToBottom = (float)ScreenHeight - randomYPos;
+    // Pick a random spawn point
+    int randomIndex = rand() % spawnPoints.size();
+    sf::Vector2f spawnPosition = spawnPoints[randomIndex];
 
-    // float xMinDist = randomXPos < distToRight ? -randomXPos : distToRight;
-    // float yMinDist = randomYPos < distToBottom ? -randomYPos : distToBottom;
-
-    // if (abs(xMinDist) < abs(yMinDist))
-    //     randomXPos += xMinDist;
-    // else
-    //     randomYPos += yMinDist;
-
-    sf::Vector2f spawnPosition = sf::Vector2f(2, 2);
     m_pVampires.push_back(std::make_unique<Vampire>(this, spawnPosition));
 
     m_spawnCount++;
