@@ -130,10 +130,14 @@ void GameInput::onMousePressed(sf::Mouse::Button button)
 
     sf::Vector2i currentMousePos = sf::Mouse::getPosition(*m_pGame->getWindow());
 
-    if (m_pGame->getContinueText()->getGlobalBounds().contains(sf::Vector2f(currentMousePos)))
+    if (m_pGame->getState() == Game::State::PAUSED)
     {
-        m_pGame->togglePause();
+        if (m_pGame->getContinueText()->getGlobalBounds().contains(sf::Vector2f(currentMousePos)))
+        {
+            m_pGame->togglePause();
+        }
     }
+
     printf("Mouse position: %d, %d\n", currentMousePos.x, currentMousePos.y);
 }
 
