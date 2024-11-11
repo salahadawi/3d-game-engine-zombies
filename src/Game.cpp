@@ -422,6 +422,41 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
                 }
             }
         }
+
+        // Draw health bar above vampire
+        int healthBarWidth = spriteWidth / 2;              // Half the width of the sprite
+        int healthBarHeight = 4;                           // Fixed height for health bar
+        int healthBarY = drawStartY - healthBarHeight - 2; // Position above vampire
+
+        if (healthBarY >= 0) // Only draw if health bar is on screen
+        {
+            int healthBarX = spriteScreenX - healthBarWidth / 2;
+
+            // Draw background (red)
+            for (int x = 0; x < healthBarWidth; x++)
+            {
+                for (int y = 0; y < healthBarHeight; y++)
+                {
+                    if (healthBarX + x >= 0 && healthBarX + x < ScreenWidth)
+                    {
+                        buffer.setPixel(healthBarX + x, healthBarY + y, sf::Color(255, 0, 0));
+                    }
+                }
+            }
+
+            // Draw health (green)
+            int healthWidth = int(healthBarWidth * (vampire->getHealth() / 100.0f));
+            for (int x = 0; x < healthWidth; x++)
+            {
+                for (int y = 0; y < healthBarHeight; y++)
+                {
+                    if (healthBarX + x >= 0 && healthBarX + x < ScreenWidth)
+                    {
+                        buffer.setPixel(healthBarX + x, healthBarY + y, sf::Color(0, 255, 0));
+                    }
+                }
+            }
+        }
     }
 
     // draw minimap
@@ -754,7 +789,19 @@ void Game::shootLaser()
 
             if (distToVamp < 0.5f) // Hit radius
             {
-                it = m_pVampires.erase(it);
+                // Damage vampire instead of instant kill
+                (*it)->damage(34.0f); // Takes 3 hits to kill
+
+                // Remove vampire if dead
+                if ((*it)->isDead())
+                {
+                    it = m_pVampires.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
+
                 hitVampire = true;
                 hit = true;
                 break;
